@@ -212,12 +212,13 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
 .tab:hover:not(.on){background:var(--bg-hover);color:var(--text-secondary)}
 .tab-name{overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .tab-x{
-  opacity:0;width:14px;height:14px;
+  opacity:.3;width:14px;height:14px;
   display:flex;align-items:center;justify-content:center;
   border-radius:2px;flex-shrink:0;font-size:14px;line-height:1;
-  color:var(--text-muted);
+  color:var(--text-muted);transition:opacity .12s,color .12s;
 }
-.tab:hover .tab-x{opacity:.45}
+.tab.on .tab-x{opacity:.5}
+.tab:hover .tab-x,.tab.on:hover .tab-x{opacity:.7}
 .tab-x:hover{opacity:1!important;color:var(--text-primary)}
 #tab-new{
   padding:0 12px;height:30px;
@@ -521,6 +522,21 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
   font-family:'Spectral',serif;font-size:.85em;
   letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);
 }
+/* Footnotes */
+#preview .fn-ref{
+  color:var(--accent);text-decoration:none;
+  font-size:.8em;font-family:'Spectral',serif;
+}
+#preview .fn-ref:hover{text-decoration:underline}
+#preview .fn-sep{margin:2.4em 0 1.2em;border-top:1px solid var(--border)}
+#preview .footnotes{font-size:.85em;color:var(--text-secondary)}
+#preview .footnotes ol{padding-left:1.4em}
+#preview .footnotes li{margin-bottom:.4em;line-height:1.6}
+#preview .fn-back{
+  color:var(--text-muted);text-decoration:none;
+  margin-left:4px;font-size:.9em;
+}
+#preview .fn-back:hover{color:var(--accent)}
 .wikilink{cursor:pointer}
 .wikilink-exists{color:var(--link);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .wikilink-missing{color:var(--text-muted);text-decoration:underline dashed;text-underline-offset:3px}
@@ -918,7 +934,7 @@ const DN=[
 //  STATE
 // ══════════════════════════════════════════
 let notes=(() => { try{const s=localStorage.getItem("askesis-notes");return s?JSON.parse(s):DN;}catch{return DN;} })();
-let currentTheme=localStorage.getItem("askesis-theme")||"askesis-dark";
+let currentTheme=localStorage.getItem("askesis-theme")||"askesis-light";
 let tabs=[{noteId:notes[0]?.id||""}];
 let activeTab=0;
 let viewMode="split";
@@ -961,6 +977,10 @@ function setSaved(ok,msg){
 // ══════════════════════════════════════════
 function inline(text){
   let t=esc(text);
+  // Footnote references: [^1] → superscript link
+  t=t.replace(/\[\^([^\]]+)\]/g,(_,id)=>
+    `<sup><a href="#fn-${esc(id)}" id="fnref-${esc(id)}" class="fn-ref">[${esc(id)}]</a></sup>`
+  );
   t=t.replace(/\[\[([^\]]+)\]\]/g,(_,title)=>{
     const f=notes.find(n=>n.title.toLowerCase()===title.toLowerCase());
     return `<span class="wikilink ${f?"wikilink-exists":"wikilink-missing"}" data-noteid="${f?f.id:""}" data-title="${title}">${title}</span>`;
@@ -974,10 +994,33 @@ function inline(text){
   t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   return t;
 }
+
+// Parse YAML frontmatter — returns raw block as string (not rendered)
+// Used only by export functions that need metadata, not by the preview renderer.
+function parseFrontmatter(text){
+  if(!text.startsWith("---\n")) return null;
+  const end=text.indexOf("\n---\n",4);
+  if(end===-1) return null;
+  const block=text.slice(4,end);
+  const out={};
+  for(const line of block.split("\n")){
+    const m=line.match(/^([^:#]+):\s*(.*)$/);
+    if(!m) continue;
+    const key=m[1].trim(), val=m[2].trim();
+    if(val.startsWith("[")){
+      out[key]=val.slice(1,-1).split(",").map(s=>s.trim().replace(/^['"]|['"]$/g,""));
+    } else {
+      out[key]=val.replace(/^['"]|['"]$/g,"");
+    }
+  }
+  return Object.keys(out).length?out:null;
+}
+
 function md(text){
   if(!text) return "";
   const lines=text.split("\n");
   let html="",inCode=false,codeLang="",codeBuf=[],inTable=false,tableBuf=[],stack=[],inFM=false,i=0;
+  const footnotes={};
   const flushList=()=>{while(stack.length)html+=`</${stack.pop()}>`};
   const flushTable=()=>{
     if(!tableBuf.length)return;
@@ -989,6 +1032,7 @@ function md(text){
   };
   while(i<lines.length){
     const l=lines[i];
+    // YAML frontmatter: skip entirely (not rendered in preview)
     if(i===0&&l==="---"){inFM=true;i++;continue;}
     if(inFM&&l==="---"){inFM=false;i++;continue;}
     if(inFM){i++;continue;}
@@ -998,6 +1042,8 @@ function md(text){
       i++;continue;
     }
     if(inCode){codeBuf.push(l);i++;continue;}
+    const fnDef=l.match(/^\[\^([^\]]+)\]:\s*(.+)/);
+    if(fnDef){footnotes[fnDef[1]]=fnDef[2];i++;continue;}
     if(l.includes("|")&&!l.match(/^#{1,6}\s/)){inTable=true;tableBuf.push(l);i++;continue;}
     if(inTable&&!l.includes("|"))flushTable();
     const hm=l.match(/^(#{1,6})\s+(.+)/);
@@ -1011,7 +1057,15 @@ function md(text){
     if(l.trim()===""){flushList();if(!inTable)html+=`<div class="spacer"></div>`;i++;continue;}
     flushList();html+=`<p>${inline(l)}</p>`;i++;
   }
-  flushList();flushTable();return html;
+  flushList();flushTable();
+  if(Object.keys(footnotes).length){
+    html+=`<hr class="fn-sep"><section class="footnotes"><ol>`;
+    for(const [id,def] of Object.entries(footnotes)){
+      html+=`<li id="fn-${esc(id)}">${inline(def)} <a href="#fnref-${esc(id)}" class="fn-back">↩</a></li>`;
+    }
+    html+=`</ol></section>`;
+  }
+  return html;
 }
 
 // ══════════════════════════════════════════
@@ -1770,13 +1824,15 @@ document.getElementById("btn-folder-sync").onclick=async()=>{
 };
 
 document.getElementById("btn-folder-close").onclick=()=>{
-  // Remove todas as notas carregadas da pasta (IDs começam com "fp_")
+  // IDs das notas carregadas da pasta
   const folderNoteIds=new Set(Object.keys(folderFileHandles).map(
     rp=>"fp_"+rp.replace(/[^a-z0-9]/gi,"_")
   ));
-  notes=notes.filter(n=>!folderNoteIds.has(n.id));
-  // Fechar abas que apontavam para notas da pasta
-  tabs=tabs.filter(t=>!folderNoteIds.has(t.noteId));
+  // IDs das notas que têm aba aberta — essas ficam, mesmo sendo da pasta
+  const openTabIds=new Set(tabs.map(t=>t.noteId));
+  // Remove da memória apenas as notas da pasta que NÃO estão abertas em aba
+  notes=notes.filter(n=>!folderNoteIds.has(n.id)||openTabIds.has(n.id));
+  // Abas: todas permanecem (o usuário não perde o que está vendo)
   if(!tabs.length) tabs=[{noteId:notes[0]?.id||""}];
   activeTab=Math.min(activeTab,tabs.length-1);
   save();

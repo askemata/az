@@ -93,6 +93,8 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
 #app{
   display:flex;flex-direction:column;
   height:100dvh;
+  /* Fallback for Android Chrome / older browsers that don't support dvh */
+  height:calc(var(--vh, 1vh) * 100);
   background:var(--bg-primary);
   color:var(--text-primary);
   overflow:hidden;
@@ -656,7 +658,7 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
 
 /* ── Mobile: <640px ── */
 @media(max-width:639px){
-  /* Viewport fix para iOS que não respeita dvh */
+  /* Viewport fix para iOS/Android que não respeitam dvh corretamente */
   #app{height:100svh;height:100dvh}
 
   /* ── Titlebar: compacta em duas colunas ── */
@@ -1423,7 +1425,7 @@ function renderSidebar(){
     cont.innerHTML=filtered.map(n=>`
       <div class="ni${n.id===tabs[activeTab]?.noteId?" on":""}" data-id="${n.id}">
         <button class="ni-del" data-del="${n.id}">✕</button>
-        <div class="ni-title">${n.title}</div>
+        <div class="ni-title">${n.filename?escHtml(n.filename):escHtml(n.title)}</div>
         <div class="ni-meta">${n.updated}</div>
         ${n.tags?.length?`<div class="ni-tags">${n.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</div>`:""}
       </div>`).join("");
@@ -1461,8 +1463,10 @@ function renderFolderTree(node, depth){
   for(const it of node.items){
     if(it.kind==="note"){
       const isActive=it.id===activeId;
+      // Show filename (with extension) in tree — that's what's on disk
+      const label=escHtml(it.filename||it.title);
       html+=`<div class="ft-note${isActive?" on":""}" data-id="${it.id}" style="padding-left:${pad+20}px">
-        <span class="ft-note-title">${escHtml(it.title)}</span>
+        <span class="ft-note-title" title="${escHtml(it.relPath)}">${label}</span>
         <button class="ft-note-del" data-del="${it.id}" title="Excluir">✕</button>
       </div>`;
     } else {
@@ -1696,16 +1700,15 @@ async function readDirRecursive(dirHandle, relPath){
       try{
         const file=await handle.getFile();
         const content=await file.text();
-        const title=name.replace(/\.(md|markdown|txt)$/i,"");
-        // Stable ID derived from path — survives reloads and avoids title collision
-        // between files with the same name in different subfolders
+        const title=name.replace(/\.(md|markdown|txt)$/i,""); // filename without ext
+        const filename=name; // full filename with extension
         const stableId="fp_"+fileRelPath.replace(/[^a-z0-9]/gi,"_");
         let note=notes.find(n=>n.id===stableId);
-        if(note){note.content=content;note.title=title;note.updated=tod();}
-        else{const t=tod();note={id:stableId,title,tags:[],created:t,updated:t,content};notes.push(note);}
+        if(note){note.content=content;note.title=title;note.filename=filename;note.updated=tod();}
+        else{const t=tod();note={id:stableId,title,filename,tags:[],created:t,updated:t,content};notes.push(note);}
         folderFileHandles[fileRelPath]=handle;
-        folderTitleIndex[title.toLowerCase()]=fileRelPath; // last-write wins on collision
-        node.items.push({kind:"note",title,id:note.id,relPath:fileRelPath});
+        folderTitleIndex[title.toLowerCase()]=fileRelPath;
+        node.items.push({kind:"note",title,filename,id:note.id,relPath:fileRelPath});
       }catch(err){console.warn("Error reading",fileRelPath,err);}
     }
   }
@@ -1767,6 +1770,17 @@ document.getElementById("btn-folder-sync").onclick=async()=>{
 };
 
 document.getElementById("btn-folder-close").onclick=()=>{
+  // Remove todas as notas carregadas da pasta (IDs começam com "fp_")
+  const folderNoteIds=new Set(Object.keys(folderFileHandles).map(
+    rp=>"fp_"+rp.replace(/[^a-z0-9]/gi,"_")
+  ));
+  notes=notes.filter(n=>!folderNoteIds.has(n.id));
+  // Fechar abas que apontavam para notas da pasta
+  tabs=tabs.filter(t=>!folderNoteIds.has(t.noteId));
+  if(!tabs.length) tabs=[{noteId:notes[0]?.id||""}];
+  activeTab=Math.min(activeTab,tabs.length-1);
+  save();
+
   folderHandle=null;
   folderTree=null;
   for(const k in folderFileHandles)delete folderFileHandles[k];
@@ -1774,7 +1788,7 @@ document.getElementById("btn-folder-close").onclick=()=>{
   collapsedFolders.clear();
   document.getElementById("folder-bar").classList.remove("visible");
   document.getElementById("btn-folder").classList.remove("folder-active");
-  renderSidebar();
+  renderTabs();renderEditor();renderSidebar();renderStatus();
 };
 
 // ══════════════════════════════════════════
@@ -1819,7 +1833,21 @@ document.getElementById("btn-save-as").onclick=async()=>{
 // ══════════════════════════════════════════
 //  EVENTS
 // ══════════════════════════════════════════
-// ── Responsive helpers ──────────────────────────────────────
+// ── Viewport height fix for Android Chrome (URL bar resize) ──
+// Android Chrome resizes the viewport when the URL bar shows/hides.
+// This sets --vh to the actual visible height, used as fallback.
+(function fixVh(){
+  function setVh(){
+    const vh=window.innerHeight*0.01;
+    document.documentElement.style.setProperty("--vh",vh+"px");
+  }
+  setVh();
+  window.addEventListener("resize",setVh);
+  // Also listen to visualViewport for Android soft-keyboard handling
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",setVh);
+  }
+})();
 const isMobile=()=>window.innerWidth<640;
 
 function openSidebarMobile(){
@@ -1903,10 +1931,7 @@ window.addEventListener("resize",()=>{
   }
 });
 
-// ── Initial mobile setup ──
-if(isMobile()){
-  setViewMode("editor");
-}
+// ── Initial view mode is handled in INIT block below ──
 document.getElementById("btn-new").onclick=()=>openModal("modal-new");
 document.getElementById("btn-export").onclick=()=>openModal("modal-export");
 document.getElementById("btn-theme").onclick=()=>openModal("modal-theme");
@@ -1973,11 +1998,25 @@ const ml=document.createElement("link");ml.rel="manifest";ml.href="data:applicat
 //  INIT
 // ══════════════════════════════════════════
 applyTheme(currentTheme);
+
+// Garante que sempre há pelo menos a nota de boas-vindas
+// (importante no Android WebView onde localStorage pode estar vazio)
+if(!notes||notes.length===0){
+  notes=DN.map(n=>({...n}));
+}
+// Garante que tabs aponta para uma nota existente
+if(!tabs.length||!notes.find(n=>n.id===tabs[0]?.noteId)){
+  tabs=[{noteId:notes[0]?.id||""}];
+  activeTab=0;
+}
+
 renderTabs();
 renderEditor();
 renderSidebar();
 renderStatus();
-setViewMode("split");
+
+// Modo de visualização inicial: split no desktop, editor no mobile/tablet
+setViewMode(isMobile()?"editor":"split");
 setSaved(true);
 </script>
 </body>

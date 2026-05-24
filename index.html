@@ -714,22 +714,21 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
   /* Viewport fix para iOS/Android que não respeitam dvh corretamente */
   #app{height:100svh;height:100dvh}
 
-  /* ── Titlebar: compacta em duas colunas ── */
+  /* ── Titlebar: linha única com scroll horizontal ── */
   #titlebar{
-    flex-wrap:wrap;
-    height:auto;
-    padding:4px 6px;
-    gap:2px;
-    row-gap:3px;
+    flex-wrap:nowrap;
+    height:38px;
+    padding:0 4px;
+    gap:1px;
+    overflow-x:auto;
+    overflow-y:hidden;
   }
+  #titlebar::-webkit-scrollbar{display:none}
   /* Logo menor */
   .tb-logo{font-size:11px;letter-spacing:.03em}
 
   /* Separadores somem */
   .tb-sep{display:none}
-
-  /* Grupo de view mode some — mobile usa tab na bottom bar */
-  .vm-grp{display:none}
 
   /* ◎ Foco some no mobile */
   #btn-focus{display:none}
@@ -738,11 +737,24 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
   #btn-save-as{display:none}
 
   /* Botões ficam menores */
-  .tb-btn{padding:4px 6px;font-size:10px;gap:2px}
+  .tb-btn{padding:3px 5px;font-size:10px;gap:1px}
 
-  /* Spacer empurra tema para fim da primeira linha */
-  .tb-spacer{flex:1;order:10}
-  #btn-theme{order:11}
+  /* Spacer empurra vm-grp + tema para a direita */
+  .tb-spacer{flex:1;min-width:4px}
+
+  /* View mode: mesma linha, compacto */
+  .vm-grp{
+    display:flex;
+    flex-shrink:0;
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .vm-btn{
+    padding:3px 7px;
+    font-size:10px;
+    letter-spacing:.03em;
+  }
+  .vm-btn.on{background:var(--accent-glow);color:var(--accent)}
 
   /* ── Tabs bar: rola horizontalmente ── */
   #tabs-bar{min-height:28px}
@@ -764,7 +776,6 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
     transform:translateX(0);
     box-shadow:var(--shadow);
   }
-  /* Quando fechado pelo botão ☰ no desktop (classe .closed), mantém hidden */
   #sidebar.closed{
     transform:translateX(-100%)!important;
     width:82vw!important;
@@ -779,8 +790,6 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
   #main{position:relative}
   #editor-area{width:100%}
 
-  /* No mobile split não faz sentido — força só um painel visível */
-  /* JS controla qual painel mostrar via view mode */
   #editor-pane{flex:1}
   #preview-pane{flex:1}
 
@@ -792,7 +801,6 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
 
   /* ── Barra de status simplificada ── */
   #statusbar{font-size:9px;padding:0 8px;gap:6px}
-  /* Esconde itens menos importantes */
   #st-chars,#st-links,#st-backlinks{display:none}
   .st-sep:nth-of-type(n+3){display:none}
 
@@ -1787,6 +1795,11 @@ function setViewMode(vm){
   if(vm==="editor"){ep.className="";pp.className="hidden";ptb.className="hidden";}
   else if(vm==="preview"){pp.className="solo";ep.className="hidden";ptb.className="hidden";}
   else{ep.className="";pp.className="";ptb.className="";}
+  // Sync mobile bottom nav indicator
+  if(isMobile()){
+    const map={"editor":"mn-editor","preview":"mn-preview","split":"mn-editor"};
+    setMobileTab(map[vm]||"mn-editor");
+  }
 }
 function setFocusMode(on){
   focusMode=on;
@@ -2095,6 +2108,8 @@ document.getElementById("mn-notes").onclick=()=>{
   else{openSidebarMobile();setMobileTab("mn-notes");}
 };
 
+// On mobile, editor/preview are handled by the vm-grp buttons in the titlebar.
+// The bottom nav editor/preview buttons are kept as quick shortcuts that also close the sidebar.
 document.getElementById("mn-editor").onclick=()=>{
   closeSidebarMobile();
   setViewMode("editor");

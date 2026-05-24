@@ -361,7 +361,44 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
 .bl-item:hover{background:var(--bg-hover);border-left-color:var(--accent);color:var(--text-primary)}
 .sb-empty{color:var(--text-dim);font-size:11px;padding:6px 8px;font-style:italic;font-family:'Spectral',serif}
 
-/* ── Folder tree ── */
+/* ── Multi-folder sections in sidebar ── */
+.fld-section{margin-bottom:4px}
+.fld-header{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 6px 5px 4px;
+  cursor:pointer;user-select:none;
+  border-radius:3px;
+  transition:background .1s;
+}
+.fld-header:hover{background:var(--bg-hover)}
+.fld-header-arrow{
+  font-size:8px;width:10px;text-align:center;
+  color:var(--text-dim);transition:transform .14s;flex-shrink:0;
+}
+.fld-header-arrow.open{transform:rotate(90deg)}
+.fld-header-name{
+  flex:1;font-size:11px;font-family:'Spectral',serif;
+  color:var(--accent);font-style:italic;letter-spacing:.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.fld-header-btns{display:flex;gap:1px;flex-shrink:0}
+.fld-btn{
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text-dim);font-size:11px;padding:1px 4px;
+  border-radius:2px;line-height:1;transition:color .1s;
+  font-family:inherit;
+}
+.fld-btn:hover{color:var(--text-primary);background:var(--bg-active)}
+.fld-body{padding-bottom:4px}
+.fld-body.hidden{display:none}
+/* Divider between folder sections */
+.fld-sep{height:1px;background:var(--border);margin:6px 4px}
+/* Notes without folder (internal notes) */
+.fld-internal-label{
+  font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);padding:8px 8px 4px;
+  font-family:'Spectral',serif;
+}
 .ft-folder{
   display:flex;align-items:center;gap:5px;
   padding:4px 6px;border-radius:3px;cursor:pointer;
@@ -925,9 +962,9 @@ const THEMES={
 //  DEFAULT NOTES
 // ══════════════════════════════════════════
 const DN=[
-  {id:"202605151000",title:"Bem-vindo ao Askesis-Zettel",tags:["início","guia"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Bem-vindo ao Askesis-Zettel\nid: 202605151000\ntags: [início, guia]\ncreated: 2026-05-15\n---\n\n# Bem-vindo ao Askesis-Zettel\n\n> *\"Um ambiente cognitivo de permanência.\"*\n\nO **Askesis-Zettel** é um editor Markdown local-first com sistema [[Zettelkasten]] integrado.\n\n## Novidades\n\n- **Pasta de projeto** — abra uma pasta e todas as notas ficam interligadas\n- **Links entre arquivos** — `[[título]]` funciona entre todos os `.md` da pasta\n- **Salvar nativo** — o botão Salvar grava diretamente no arquivo em disco\n- **Realce de sintaxe** — o editor colore Markdown em tempo real\n- **Export Latin Modern** — HTML e PDF tipografados como LaTeX\n\n## Como usar links\n\nCrie um link para [[Zettelkasten]] colocando o título entre colchetes duplos.\n\n---\n\n*Suas notas são salvas no localStorage e/ou em arquivos via File System Access API.*\n"},
-  {id:"202605151001",title:"Zettelkasten",tags:["método","conhecimento"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Zettelkasten\nid: 202605151001\ntags: [método, conhecimento]\ncreated: 2026-05-15\n---\n\n# Zettelkasten\n\nO **Zettelkasten** é um método de gestão do conhecimento do sociólogo Niklas Luhmann.\n\n## Princípios\n\n1. **Atomicidade** — uma ideia por nota\n2. **Autonomia** — cada nota compreensível por si\n3. **Conexão** — notas ligadas entre si\n4. **Indexação** — ponto de entrada organizado\n\n## No Askesis-Zettel\n\nUse `[[título]]` para links. Veja [[Bem-vindo ao Askesis-Zettel]] para começar.\n\n## Referências\n\n- Luhmann, N. *Kommunikation mit Zettelkästen* (1981)\n- Ahrens, S. *How to Take Smart Notes* (2017)\n"},
-  {id:"202605151002",title:"Filosofia do Estudo",tags:["filosofia","estudo"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Filosofia do Estudo\nid: 202605151002\ntags: [filosofia, estudo]\ncreated: 2026-05-15\n---\n\n# Filosofia do Estudo\n\n> *\"Não basta acumular informação — é preciso cultivar compreensão.\"*\n\n## Estudo como Askesis\n\n*Askesis* (ἄσκησις) — prática disciplinada, exercício espiritual.\n\n- requer **quietude**\n- exige **presença**\n- produz **transformação**\n\n## Conexão com [[Zettelkasten]]\n\nAo externalizar conexões, liberamos memória de trabalho para pensar com mais profundidade.\n\n---\n\n*\"A mente não é um recipiente a ser preenchido, mas um fogo a ser aceso.\"* — Plutarco\n"},
+  {id:"202605151000",title:"Bem-vindo ao Askesis-Zettel",filename:"Bem-vindo ao Askesis-Zettel.md",tags:["início","guia"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Bem-vindo ao Askesis-Zettel\ntags: [início, guia]\n---\n\n# Bem-vindo ao Askesis-Zettel\n\n> *\"Um ambiente cognitivo de permanência.\"*\n\nO **Askesis-Zettel** é um editor Markdown local-first com sistema [[Zettelkasten]] integrado, desenvolvido pelo projeto **Askesis** — uma iniciativa de humanidades digitais sediada em [askesis.hypotheses.org](https://askesis.hypotheses.org).[^1]\n\nTodas as suas notas ficam salvas localmente no seu dispositivo. Nenhum dado é enviado a servidores externos.\n\n---\n\n## Como usar\n\n### Criar e editar notas\n\n- Clique em **+ Nova** (barra superior) para criar uma nota\n- Digite em Markdown no painel esquerdo — o preview aparece à direita em tempo real\n- Use **Ctrl+S** (ou ⌘S no Mac) para salvar em arquivo\n\n### Abrir uma pasta de arquivos\n\nClique em **⊞ Pasta** para vincular uma pasta do seu computador.[^2] Todos os arquivos `.md` da pasta e subpastas aparecem na coluna esquerda como uma árvore navegável. Você pode abrir **múltiplas pastas** simultaneamente — cada uma aparece como uma seção separada na sidebar.\n\n### Navegar entre notas\n\n- **Coluna esquerda** — clique em qualquer arquivo para abri-lo\n- **Pastas** — clique no nome da pasta para expandir ou recolher\n- **Abas** — múltiplas notas abertas ao mesmo tempo na barra superior\n- **Busca** — campo no topo da coluna esquerda filtra por título e conteúdo\n\n### Links entre notas\n\nUse `[[título]]` para criar um link para outra nota:\n\n- [[Zettelkasten]] — exemplo de link para a nota de referência incluída\n- Links em azul → nota existe; links tracejados → nota ainda não existe\n\n### Exportar\n\nClique em **↗** para salvar em: Markdown, HTML (tipografia Latin Modern), PDF, ODT ou RTF.\n\n### Temas\n\nClique em **◑** para escolher entre 6 temas visuais.\n\n---\n\n## Sintaxe Markdown suportada\n\n| Sintaxe | Resultado |\n|---|---|\n| `**texto**` | **negrito** |\n| `*texto*` | *itálico* |\n| `# Título` | Cabeçalho H1–H6 |\n| `[[nota]]` | Link Zettelkasten |\n| `[^1]` | Nota de rodapé[^3] |\n| ` ```código``` ` | Bloco de código |\n| `> texto` | Citação |\n\n---\n\n[^1]: Askesis é um projeto de pesquisa e desenvolvimento de ferramentas digitais para humanidades. Visite [askesis.hypotheses.org](https://askesis.hypotheses.org) para mais informações.\n[^2]: Requer navegador Chromium-based (Chrome, Edge, Brave). No Firefox, use o botão Abrir para carregar arquivos individualmente.\n[^3]: As notas de rodapé aparecem ao final do documento no preview e nas exportações HTML/PDF.\n"},
+  {id:"202605151001",title:"Zettelkasten",filename:"Zettelkasten.md",tags:["método","conhecimento"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Zettelkasten\ntags: [método, conhecimento]\n---\n\n# Zettelkasten\n\nO **Zettelkasten** é um método de gestão do conhecimento desenvolvido pelo sociólogo Niklas Luhmann, que produziu mais de 70 livros e 400 artigos académicos usando um sistema de fichas interligadas.[^1]\n\n## Princípios\n\n1. **Atomicidade** — uma ideia por nota\n2. **Autonomia** — cada nota compreensível por si mesma\n3. **Conexão** — notas ligadas entre si via referências\n4. **Indexação** — pontos de entrada organizados\n\n## No Askesis-Zettel\n\nUse `[[título]]` para criar links entre notas. Veja [[Bem-vindo ao Askesis-Zettel]] para instruções completas.\n\n## Referências\n\n- Luhmann, N. *Kommunikation mit Zettelkästen* (1981)\n- Ahrens, S. *How to Take Smart Notes* (2017)\n\n[^1]: Luhmann manteve seu Zettelkasten físico com mais de 90.000 fichas ao longo de 40 anos de trabalho.\n"},
+  {id:"202605151002",title:"Filosofia do Estudo",filename:"Filosofia do Estudo.md",tags:["filosofia","estudo"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Filosofia do Estudo\ntags: [filosofia, estudo]\n---\n\n# Filosofia do Estudo\n\n> *\"Não basta acumular informação — é preciso cultivar compreensão.\"*\n\n## Estudo como Askesis\n\n*Askesis* (ἄσκησις) — prática disciplinada, exercício espiritual.\n\n- requer **quietude**\n- exige **presença**\n- produz **transformação**\n\n## Conexão com [[Zettelkasten]]\n\nAo externalizar conexões, liberamos memória de trabalho para pensar com mais profundidade.\n\n---\n\n*\"A mente não é um recipiente a ser preenchido, mas um fogo a ser aceso.\"* — Plutarco\n"},
 ];
 
 // ══════════════════════════════════════════
@@ -946,15 +983,33 @@ let installPromptEvent=null;
 
 // File System handles: noteId → FileSystemFileHandle
 const fileHandles={};
-// Folder file map: relPath (e.g. "sub/nota.md") → FileSystemFileHandle
-let folderHandle=null;
-const folderFileHandles={}; // relPath → FileSystemFileHandle
-// title → relPath reverse index for wikilink resolution
-const folderTitleIndex={}; // title.toLowerCase() → relPath
-// Tree structure (rebuilt on each folder load)
-let folderTree=null; // {name, path, children:[], notes:[{title,id,relPath}]}
-// Set of collapsed folder paths (by relPath key)
-const collapsedFolders=new Set();
+// ── Multi-folder state ──────────────────────────────────────
+// Each open folder is stored in openFolders[] by insertion order.
+// openFolders[i] = {
+//   id: string (unique, e.g. "f0","f1",...),
+//   handle: DirectoryHandle,
+//   name: string,
+//   tree: node,              // same structure as before
+//   fileHandles: {},         // relPath → FSFileHandle  (local to this folder)
+//   titleIndex: {},          // title.toLowerCase() → relPath
+//   collapsed: Set,          // collapsed sub-paths
+//   headerCollapsed: bool,   // whether this folder's section is collapsed in sidebar
+// }
+const openFolders=[];
+let _folderSeq=0; // monotonic ID generator
+
+// Compatibility accessors (used by saveNoteToFile, hasFh, etc.)
+// Merges all open folders into flat maps — last-write wins on collision.
+function _allFileHandles(){
+  const m={};
+  for(const f of openFolders) Object.assign(m,f.fileHandles);
+  return m;
+}
+function _allTitleIndex(){
+  const m={};
+  for(const f of openFolders) Object.assign(m,f.titleIndex);
+  return m;
+}
 
 // ══════════════════════════════════════════
 //  UTILS
@@ -1331,7 +1386,7 @@ function renderTabs(){
     const d=document.createElement("div");
     d.className="tab"+(activeTab===idx?" on":"");
     // show folder icon if note has a folder handle
-    const hasFh=note&&(fileHandles[note.id]||folderTitleIndex[note.title?.toLowerCase()]);
+    const hasFh=note&&(fileHandles[note.id]||_allTitleIndex()[note.title?.toLowerCase()]);
     d.innerHTML=`<span class="tab-name">${hasFh?"📄 ":""}${note?note.title:"Sem título"}</span><span class="tab-x">×</span>`;
     d.onclick=(e)=>{if(e.target.classList.contains("tab-x")){closeTab(idx);return;}setActiveTab(idx);};
     bar.appendChild(d);
@@ -1465,28 +1520,96 @@ function renderSidebar(){
   const q=searchQuery.toLowerCase();
 
   if(sidebarMode==="explorer"){
-    // ── Folder tree mode (when a folder is open and no search query) ──
-    if(folderTree && !q){
-      cont.innerHTML=renderFolderTree(folderTree, 0);
-      bindFolderTree(cont);
+    // ── Search mode: flat list across all notes ──
+    if(q){
+      const filtered=notes.filter(n=>
+        n.title.toLowerCase().includes(q)||
+        n.content.toLowerCase().includes(q)||
+        n.tags?.some(t=>t.toLowerCase().includes(q))
+      );
+      if(!filtered.length){cont.innerHTML=`<div class="sb-empty">Nenhuma nota encontrada.</div>`;return;}
+      cont.innerHTML=filtered.map(n=>`
+        <div class="ni${n.id===tabs[activeTab]?.noteId?" on":""}" data-id="${n.id}">
+          <button class="ni-del" data-del="${n.id}">✕</button>
+          <div class="ni-title">${n.filename?escHtml(n.filename):escHtml(n.title)}</div>
+          <div class="ni-meta">${n.updated}</div>
+          ${n.tags?.length?`<div class="ni-tags">${n.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</div>`:""}
+        </div>`).join("");
+      cont.querySelectorAll(".ni").forEach(el=>el.onclick=e=>{
+        if(e.target.dataset.del){deleteNote(e.target.dataset.del);return;}
+        openNote(el.dataset.id);
+      });
       return;
     }
-    // ── Flat list mode (search or no folder) ──
-    const filtered=q
-      ? notes.filter(n=>n.title.toLowerCase().includes(q)||n.content.toLowerCase().includes(q)||n.tags?.some(t=>t.toLowerCase().includes(q)))
-      : notes;
-    if(!filtered.length){cont.innerHTML=`<div class="sb-empty">Nenhuma nota encontrada.</div>`;return;}
-    cont.innerHTML=filtered.map(n=>`
-      <div class="ni${n.id===tabs[activeTab]?.noteId?" on":""}" data-id="${n.id}">
-        <button class="ni-del" data-del="${n.id}">✕</button>
-        <div class="ni-title">${n.filename?escHtml(n.filename):escHtml(n.title)}</div>
-        <div class="ni-meta">${n.updated}</div>
-        ${n.tags?.length?`<div class="ni-tags">${n.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</div>`:""}
-      </div>`).join("");
+
+    // ── Tree mode: one section per open folder + internal notes ──
+    let html="";
+
+    // Internal notes (not from any folder)
+    const folderIds=new Set(openFolders.flatMap(f=>
+      Object.keys(f.fileHandles).map(rp=>"fp_"+rp.replace(/[^a-z0-9]/gi,"_"))
+    ));
+    const internalNotes=notes.filter(n=>!n.id.startsWith("fp_")&&!folderIds.has(n.id));
+
+    if(internalNotes.length){
+      html+=`<div class="fld-internal-label">Notas internas</div>`;
+      html+=internalNotes.map(n=>`
+        <div class="ni${n.id===tabs[activeTab]?.noteId?" on":""}" data-id="${n.id}">
+          <button class="ni-del" data-del="${n.id}">✕</button>
+          <div class="ni-title">${escHtml(n.title)}</div>
+          <div class="ni-meta">${n.updated}</div>
+        </div>`).join("");
+    }
+
+    // One section per open folder
+    for(const folder of openFolders){
+      if(html) html+=`<div class="fld-sep"></div>`;
+      const isOpen=!folder.headerCollapsed;
+      html+=`<div class="fld-section" data-fid="${folder.id}">
+        <div class="fld-header" data-fid-toggle="${folder.id}">
+          <span class="fld-header-arrow${isOpen?" open":""}">▶</span>
+          <span class="fld-header-name" title="${escHtml(folder.name)}">📁 ${escHtml(folder.name)}</span>
+          <span class="fld-header-btns">
+            <button class="fld-btn" data-fid-sync="${folder.id}" title="Recarregar">↺</button>
+            <button class="fld-btn" data-fid-close="${folder.id}" title="Fechar pasta">✕</button>
+          </span>
+        </div>
+        <div class="fld-body${isOpen?"":" hidden"}" data-fid-body="${folder.id}">
+          ${folder.tree?renderFolderTree(folder.tree,0,folder):""}
+        </div>
+      </div>`;
+    }
+
+    if(!html) html=`<div class="sb-empty">Nenhuma nota. Crie uma (+) ou abra uma pasta (⊞).</div>`;
+    cont.innerHTML=html;
+
+    // Bind internal note clicks
     cont.querySelectorAll(".ni").forEach(el=>el.onclick=e=>{
       if(e.target.dataset.del){deleteNote(e.target.dataset.del);return;}
       openNote(el.dataset.id);
     });
+
+    // Bind folder header toggles
+    cont.querySelectorAll("[data-fid-toggle]").forEach(el=>el.onclick=()=>{
+      const f=openFolders.find(x=>x.id===el.dataset.fidToggle);
+      if(f){f.headerCollapsed=!f.headerCollapsed;renderSidebar();}
+    });
+
+    // Bind sync buttons
+    cont.querySelectorAll("[data-fid-sync]").forEach(el=>el.onclick=async(e)=>{
+      e.stopPropagation();
+      const f=openFolders.find(x=>x.id===el.dataset.fidSync);
+      if(f) await reloadFolder(f);
+    });
+
+    // Bind close buttons
+    cont.querySelectorAll("[data-fid-close]").forEach(el=>el.onclick=(e)=>{
+      e.stopPropagation();
+      closeFolder(el.dataset.fidClose);
+    });
+
+    // Bind tree notes
+    bindFolderTree(cont);
 
   } else if(sidebarMode==="backlinks"){
     const backlinks=note?notes.filter(n=>n.id!==note.id&&n.content.toLowerCase().includes(`[[${note.title.toLowerCase()}]]`)):[];
@@ -1510,14 +1633,15 @@ function renderSidebar(){
 }
 
 // ── Build folder tree HTML — iterates node.items (pre-sorted, unified) ──
-function renderFolderTree(node, depth){
+function renderFolderTree(node, depth, folder){
   const activeId=tabs[activeTab]?.noteId;
   const pad=depth*14;
+  // folder.collapsed is the per-folder Set; fall back to global for compat
+  const collapsed=folder?.collapsed||collapsedFolders;
   let html="";
   for(const it of node.items){
     if(it.kind==="note"){
       const isActive=it.id===activeId;
-      // Show filename (with extension) in tree — that's what's on disk
       const label=escHtml(it.filename||it.title);
       html+=`<div class="ft-note${isActive?" on":""}" data-id="${it.id}" style="padding-left:${pad+20}px">
         <span class="ft-note-title" title="${escHtml(it.relPath)}">${label}</span>
@@ -1525,14 +1649,14 @@ function renderFolderTree(node, depth){
       </div>`;
     } else {
       const child=it.node;
-      const isOpen=!collapsedFolders.has(child.relPath);
-      html+=`<div class="ft-folder" data-folder="${escHtml(child.relPath)}" style="padding-left:${pad+4}px">
+      const isOpen=!collapsed.has(child.relPath);
+      html+=`<div class="ft-folder" data-folder="${escHtml(child.relPath)}" data-fid="${folder?.id||""}" style="padding-left:${pad+4}px">
         <span class="ft-arrow${isOpen?" open":""}">▶</span>
         <span class="ft-icon">${isOpen?"📂":"📁"}</span>
         <span class="ft-label">${escHtml(child.name)}</span>
       </div>
       <div class="ft-children${isOpen?" open":""}" data-children="${escHtml(child.relPath)}">
-        ${renderFolderTree(child, depth+1)}
+        ${renderFolderTree(child, depth+1, folder)}
       </div>`;
     }
   }
@@ -1541,7 +1665,6 @@ function renderFolderTree(node, depth){
 
 // ── Bind events on the rendered tree ──
 function bindFolderTree(cont){
-  // Note click → open; Del click → delete
   cont.querySelectorAll(".ft-note").forEach(el=>{
     el.onclick=e=>{
       const del=e.target.closest(".ft-note-del");
@@ -1549,12 +1672,14 @@ function bindFolderTree(cont){
       openNote(el.dataset.id);
     };
   });
-  // Folder click → toggle collapse
   cont.querySelectorAll(".ft-folder").forEach(el=>{
     el.onclick=()=>{
       const rp=el.dataset.folder;
-      if(collapsedFolders.has(rp))collapsedFolders.delete(rp);
-      else collapsedFolders.add(rp);
+      const fid=el.dataset.fid;
+      const folder=openFolders.find(f=>f.id===fid);
+      const collapsed=folder?.collapsed||collapsedFolders;
+      if(collapsed.has(rp))collapsed.delete(rp);
+      else collapsed.add(rp);
       renderSidebar();
     };
   });
@@ -1723,45 +1848,37 @@ document.getElementById("file-open-input").onchange=async(e)=>{
 };
 
 // ══════════════════════════════════════════
-//  FILE SYSTEM — Open FOLDER (Zettelkasten, recursive)
+//  FILE SYSTEM — Multi-folder management
 // ══════════════════════════════════════════
 
-// Recursively read a DirectoryHandle.
-// node.items is a unified, pre-sorted list of {kind:"note"|"folder",...}
-// so renderFolderTree can emit them in correct order without re-sorting.
-async function readDirRecursive(dirHandle, relPath){
+async function readDirRecursive(dirHandle, relPath, folder){
   const node={name:dirHandle.name, relPath, items:[]};
-
   const entries=[];
   for await(const [name,handle] of dirHandle.entries()) entries.push([name,handle]);
-
-  // Sort: folders first, then files; both alphabetical, case-insensitive
   entries.sort(([na,ha],[nb,hb])=>{
     if(ha.kind!==hb.kind) return ha.kind==="directory"?-1:1;
     return na.localeCompare(nb,undefined,{sensitivity:"base"});
   });
-
   for(const [name,handle] of entries){
     if(name.startsWith(".")) continue;
-
     if(handle.kind==="directory"){
       const childPath=relPath?relPath+"/"+name:name;
-      const child=await readDirRecursive(handle,childPath);
+      const child=await readDirRecursive(handle,childPath,folder);
       if(countTreeItems(child)>0) node.items.push({kind:"folder",node:child});
-
     } else if(/\.(md|markdown|txt)$/i.test(name)){
       const fileRelPath=relPath?relPath+"/"+name:name;
       try{
         const file=await handle.getFile();
         const content=await file.text();
-        const title=name.replace(/\.(md|markdown|txt)$/i,""); // filename without ext
-        const filename=name; // full filename with extension
-        const stableId="fp_"+fileRelPath.replace(/[^a-z0-9]/gi,"_");
+        const title=name.replace(/\.(md|markdown|txt)$/i,"");
+        const filename=name;
+        // ID scoped to folder to avoid collision across folders
+        const stableId="fp_"+folder.id+"_"+fileRelPath.replace(/[^a-z0-9]/gi,"_");
         let note=notes.find(n=>n.id===stableId);
         if(note){note.content=content;note.title=title;note.filename=filename;note.updated=tod();}
         else{const t=tod();note={id:stableId,title,filename,tags:[],created:t,updated:t,content};notes.push(note);}
-        folderFileHandles[fileRelPath]=handle;
-        folderTitleIndex[title.toLowerCase()]=fileRelPath;
+        folder.fileHandles[fileRelPath]=handle;
+        folder.titleIndex[title.toLowerCase()]=fileRelPath;
         node.items.push({kind:"note",title,filename,id:note.id,relPath:fileRelPath});
       }catch(err){console.warn("Error reading",fileRelPath,err);}
     }
@@ -1782,26 +1899,77 @@ function firstNoteInTree(node){
 }
 
 async function loadFolder(handle){
-  folderHandle=handle;
-  document.getElementById("folder-name").textContent=handle.name;
-  document.getElementById("folder-bar").classList.add("visible");
-  document.getElementById("btn-folder").classList.add("folder-active");
-
-  for(const k in folderFileHandles)delete folderFileHandles[k];
-  for(const k in folderTitleIndex)delete folderTitleIndex[k];
-  collapsedFolders.clear();
-
-  folderTree=await readDirRecursive(handle,"");
-  const total=countTreeItems(folderTree);
-  save();
-
-  if(total>0&&(!curNote()||!notes.find(n=>n.id===tabs[activeTab]?.noteId))){
-    const first=firstNoteInTree(folderTree);
-    if(first) openNote(first.id);
+  if(!window.showDirectoryPicker){
+    alert("Seu navegador não suporta acesso a pastas (Chrome/Edge necessário).");
+    return 0;
   }
+  // Check if this folder is already open (by name — handles can't be compared directly)
+  if(openFolders.find(f=>f.name===handle.name)){
+    // Reload it instead of adding duplicate
+    const existing=openFolders.find(f=>f.name===handle.name);
+    await reloadFolder(existing);
+    return countTreeItems(existing.tree||{items:[]});
+  }
+  const folder={
+    id:"f"+(_folderSeq++),
+    handle,
+    name:handle.name,
+    tree:null,
+    fileHandles:{},
+    titleIndex:{},
+    collapsed:new Set(),
+    headerCollapsed:false,
+  };
+  openFolders.push(folder);
+  folder.tree=await readDirRecursive(handle,"",folder);
+  const total=countTreeItems(folder.tree);
+  save();
+  if(total>0) openNote(firstNoteInTree(folder.tree)?.id||"");
+  updateFolderBar();
   renderSidebar();renderStatus();
   setSaved(true);
   return total;
+}
+
+async function reloadFolder(folder){
+  if(!folder?.handle) return;
+  // Remove old notes for this folder from memory
+  const oldIds=new Set(Object.keys(folder.fileHandles).map(
+    rp=>"fp_"+folder.id+"_"+rp.replace(/[^a-z0-9]/gi,"_")
+  ));
+  const openTabIds=new Set(tabs.map(t=>t.noteId));
+  notes=notes.filter(n=>!oldIds.has(n.id)||openTabIds.has(n.id));
+  folder.fileHandles={};
+  folder.titleIndex={};
+  folder.tree=await readDirRecursive(folder.handle,"",folder);
+  save();
+  renderTabs();renderEditor();renderSidebar();renderStatus();
+  setSaved(true);
+}
+
+function closeFolder(fid){
+  const idx=openFolders.findIndex(f=>f.id===fid);
+  if(idx===-1) return;
+  const folder=openFolders[idx];
+  // Remove folder notes not open in a tab
+  const folderNoteIds=new Set(Object.keys(folder.fileHandles).map(
+    rp=>"fp_"+folder.id+"_"+rp.replace(/[^a-z0-9]/gi,"_")
+  ));
+  const openTabIds=new Set(tabs.map(t=>t.noteId));
+  notes=notes.filter(n=>!folderNoteIds.has(n.id)||openTabIds.has(n.id));
+  openFolders.splice(idx,1);
+  if(!tabs.length) tabs=[{noteId:notes[0]?.id||""}];
+  activeTab=Math.min(activeTab,tabs.length-1);
+  save();
+  updateFolderBar();
+  renderTabs();renderEditor();renderSidebar();renderStatus();
+}
+
+function updateFolderBar(){
+  // The old single folder-bar is no longer needed — hide it always.
+  // Folder controls are now embedded in the sidebar sections.
+  document.getElementById("folder-bar").classList.remove("visible");
+  document.getElementById("btn-folder").classList.toggle("folder-active", openFolders.length>0);
 }
 
 document.getElementById("btn-folder").onclick=async()=>{
@@ -1817,34 +1985,14 @@ document.getElementById("btn-folder").onclick=async()=>{
   }catch(e){if(e.name!=="AbortError")alert("Erro ao abrir pasta: "+e.message);}
 };
 
+// Keep old sync/close buttons functional as no-ops (HTML still has them)
 document.getElementById("btn-folder-sync").onclick=async()=>{
-  if(!folderHandle){return;}
-  await loadFolder(folderHandle);
+  for(const f of openFolders) await reloadFolder(f);
   renderEditor();
 };
-
 document.getElementById("btn-folder-close").onclick=()=>{
-  // IDs das notas carregadas da pasta
-  const folderNoteIds=new Set(Object.keys(folderFileHandles).map(
-    rp=>"fp_"+rp.replace(/[^a-z0-9]/gi,"_")
-  ));
-  // IDs das notas que têm aba aberta — essas ficam, mesmo sendo da pasta
-  const openTabIds=new Set(tabs.map(t=>t.noteId));
-  // Remove da memória apenas as notas da pasta que NÃO estão abertas em aba
-  notes=notes.filter(n=>!folderNoteIds.has(n.id)||openTabIds.has(n.id));
-  // Abas: todas permanecem (o usuário não perde o que está vendo)
-  if(!tabs.length) tabs=[{noteId:notes[0]?.id||""}];
-  activeTab=Math.min(activeTab,tabs.length-1);
-  save();
-
-  folderHandle=null;
-  folderTree=null;
-  for(const k in folderFileHandles)delete folderFileHandles[k];
-  for(const k in folderTitleIndex)delete folderTitleIndex[k];
-  collapsedFolders.clear();
-  document.getElementById("folder-bar").classList.remove("visible");
-  document.getElementById("btn-folder").classList.remove("folder-active");
-  renderTabs();renderEditor();renderSidebar();renderStatus();
+  // Close all folders
+  while(openFolders.length) closeFolder(openFolders[0].id);
 };
 
 // ══════════════════════════════════════════
@@ -1859,9 +2007,11 @@ async function saveNoteToFile(note, forceDialog){
     setSaved(true);return;
   }
   try{
-    // Priority: individual handle > folder handle (via title index) > dialog
-    const folderRelPath=folderTitleIndex[note.title?.toLowerCase()];
-    let handle=fileHandles[note.id]||(folderRelPath?folderFileHandles[folderRelPath]:null);
+    // Find handle: individual > any open folder > dialog
+    const titleIndex=_allTitleIndex();
+    const allFH=_allFileHandles();
+    const folderRelPath=titleIndex[note.title?.toLowerCase()];
+    let handle=fileHandles[note.id]||(folderRelPath?allFH[folderRelPath]:null);
     if(!handle||forceDialog){
       handle=await window.showSaveFilePicker({
         suggestedName:`${slugify(note.title)||"nota"}.md`,

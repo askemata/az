@@ -1,0 +1,2 @@
+# az
+zettelkasten

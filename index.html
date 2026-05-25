@@ -1146,28 +1146,40 @@ function md(text){
 // Pre-escape helper
 const _he=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-// hlInline: regex-based, ~5-10x faster than the old char-by-char loop
+// hlInline: regex-based inline highlight.
+// IMPORTANT: patterns run on HTML-escaped text, so * _ ~ are literal.
+// Each pattern uses a negated character class [^X] to prevent crossing
+// the closing delimiter — this correctly handles multiple tokens per line.
 function hlInline(raw){
-  // Escape first, then apply span patterns on the escaped string.
-  // Order matters: longest/greediest patterns first.
   let t=_he(raw);
-  // [[wikilink]]
-  t=t.replace(/\[\[([^\]]+)\]\]/g,(_,m)=>`<span style="color:var(--sh-wiki)">[[${m}]]</span>`);
-  // `code`
-  t=t.replace(/`([^`]+)`/g,(_,m)=>`<span style="color:var(--sh-code)">\`${m}\`</span>`);
-  // **bold** and __bold__
-  t=t.replace(/\*\*([^*]+)\*\*/g,(_,m)=>`<span style="color:var(--sh-bold);font-weight:700">**${m}**</span>`);
-  t=t.replace(/__([^_]+)__/g,(_,m)=>`<span style="color:var(--sh-bold);font-weight:700">__${m}__</span>`);
-  // ~~strike~~
-  t=t.replace(/~~([^~]+)~~/g,(_,m)=>`<span style="color:var(--sh-quote);text-decoration:line-through">~~${m}~~</span>`);
-  // *italic* (not inside **)
-  t=t.replace(/\*([^*]+)\*/g,(_,m)=>`<span style="color:var(--sh-italic);font-style:italic">*${m}*</span>`);
-  // _italic_ (not inside __)
-  t=t.replace(/_([^_]+)_/g,(_,m)=>`<span style="color:var(--sh-italic);font-style:italic">_${m}_</span>`);
+  // [[wikilink]] — must run before [link](url) to avoid partial matches
+  t=t.replace(/\[\[([^\]]+)\]\]/g,
+    (_,m)=>`<span style="color:var(--sh-wiki)">[[${m}]]</span>`);
+  // `code` — run early so content inside is not further processed
+  t=t.replace(/`([^`\n]+)`/g,
+    (_,m)=>`<span style="color:var(--sh-code)">\`${m}\`</span>`);
+  // **bold** — [^*\n]+ prevents crossing newline or another **
+  t=t.replace(/\*\*([^*\n]+?)\*\*/g,
+    (_,m)=>`<span style="color:var(--sh-bold);font-weight:700">**${m}**</span>`);
+  // __bold__ — [^_\n]+ prevents crossing __
+  t=t.replace(/__([^_\n]+?)__/g,
+    (_,m)=>`<span style="color:var(--sh-bold);font-weight:700">__${m}__</span>`);
+  // ~~strike~~ — [^~\n]+
+  t=t.replace(/~~([^~\n]+?)~~/g,
+    (_,m)=>`<span style="color:var(--sh-quote);text-decoration:line-through">~~${m}~~</span>`);
+  // *italic* — must not start with * (would be **bold**) and not cross newline
+  // Use negative lookbehind (?<!\*) and negative lookahead (?!\*)
+  t=t.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g,
+    (_,m)=>`<span style="color:var(--sh-italic);font-style:italic">*${m}*</span>`);
+  // _italic_ — must not start/end with _ (would be __bold__)
+  t=t.replace(/(?<!_)_([^_\n]+?)_(?!_)/g,
+    (_,m)=>`<span style="color:var(--sh-italic);font-style:italic">_${m}_</span>`);
   // [text](url)
-  t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,(_,txt,url)=>`<span style="color:var(--sh-link)">[${txt}](${url})</span>`);
-  // footnote refs [^id]
-  t=t.replace(/\[\^([^\]]+)\]/g,(_,id)=>`<span style="color:var(--sh-code)">[^${id}]</span>`);
+  t=t.replace(/\[([^\]\n]+)\]\(([^)\n]+)\)/g,
+    (_,txt,url)=>`<span style="color:var(--sh-link)">[${txt}](${url})</span>`);
+  // [^footnote]
+  t=t.replace(/\[\^([^\]\n]+)\]/g,
+    (_,id)=>`<span style="color:var(--sh-code)">[^${id}]</span>`);
   return t;
 }
 

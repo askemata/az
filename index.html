@@ -973,7 +973,7 @@ const THEMES={
 //  DEFAULT NOTES
 // ══════════════════════════════════════════
 const DN=[
-  {id:"202605151000",title:"Bem-vindo ao Askesis-Zettel",filename:"Bem-vindo ao Askesis-Zettel.md",tags:["início","guia"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Bem-vindo ao Askesis-Zettel\ntags: [início, guia]\n---\n\n# Bem-vindo ao Askesis-Zettel\n\n> *\"Um ambiente cognitivo de permanência.\"*\n\nO **Askesis-Zettel** é um editor Markdown local-first com sistema [[Zettelkasten]] integrado, desenvolvido pelo projeto **Askesis** — uma iniciativa de humanidades digitais sediada em [askesis.hypotheses.org](https://askesis.hypotheses.org).[^1]\n\nTodas as suas notas ficam salvas localmente no seu dispositivo. Nenhum dado é enviado a servidores externos.\n\n---\n\n## Como usar\n\n### Criar e editar notas\n\n- Clique em **+ Nova** (barra superior) para criar uma nota\n- Digite em Markdown no painel esquerdo — o preview aparece à direita em tempo real\n- Use **Ctrl+S** (ou ⌘S no Mac) para salvar em arquivo\n\n### Abrir uma pasta de arquivos\n\nClique em **⊞ Pasta** para vincular uma pasta do seu computador.[^2] Todos os arquivos `.md` da pasta e subpastas aparecem na coluna esquerda como uma árvore navegável. Você pode abrir **múltiplas pastas** simultaneamente — cada uma aparece como uma seção separada na sidebar.\n\n### Navegar entre notas\n\n- **Coluna esquerda** — clique em qualquer arquivo para abri-lo\n- **Pastas** — clique no nome da pasta para expandir ou recolher\n- **Abas** — múltiplas notas abertas ao mesmo tempo na barra superior\n- **Busca** — campo no topo da coluna esquerda filtra por título e conteúdo\n\n### Links entre notas\n\nUse `[[título]]` para criar um link para outra nota:\n\n- [[Zettelkasten]] — exemplo de link para a nota de referência incluída\n- Links em azul → nota existe; links tracejados → nota ainda não existe\n\n### Exportar\n\nClique em **↗** para salvar em: Markdown, HTML (tipografia Latin Modern), PDF, ODT ou RTF.\n\n### Temas\n\nClique em **◑** para escolher entre 6 temas visuais.\n\n---\n\n## Sintaxe Markdown suportada\n\n| Sintaxe | Resultado |\n|---|---|\n| `**texto**` | **negrito** |\n| `*texto*` | *itálico* |\n| `# Título` | Cabeçalho H1–H6 |\n| `[[nota]]` | Link Zettelkasten |\n| `[^1]` | Nota de rodapé[^3] |\n| ` ```código``` ` | Bloco de código |\n| `> texto` | Citação |\n\n---\n\n[^1]: Askesis é um projeto de pesquisa e desenvolvimento de ferramentas digitais para humanidades. Visite [askesis.hypotheses.org](https://askesis.hypotheses.org) para mais informações.\n[^2]: Requer navegador Chromium-based (Chrome, Edge, Brave). No Firefox, use o botão Abrir para carregar arquivos individualmente.\n[^3]: As notas de rodapé aparecem ao final do documento no preview e nas exportações HTML/PDF.\n"},
+  {id:"202605151000",title:"Bem-vindo ao Askesis-Zettel",filename:"Bem-vindo ao Askesis-Zettel.md",tags:["início","guia"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Bem-vindo ao Askesis-Zettel\ntags: [início, guia]\n---\n\n# Bem-vindo ao Askesis-Zettel\n\n> *\"Um ambiente cognitivo de permanência.\"*\n\nO **Askesis-Zettel** é um editor Markdown local-first com sistema [[Zettelkasten]] integrado, desenvolvido pelo projeto **Askesis** — uma iniciativa de humanidades digitais sediada em [askesis.hypotheses.org](https://askesis.hypotheses.org).[^1]\n\nTodas as suas notas ficam salvas localmente no seu dispositivo. Nenhum dado é enviado a servidores externos.\n\n---\n\n## Criar e editar notas\n\n- Clique em **+ Nova** (barra superior) para criar uma nota\n- Digite em Markdown no painel esquerdo — o preview aparece à direita em tempo real\n- Use **Ctrl+S** (ou ⌘S no Mac) para salvar em arquivo\n\n---\n\n## Abrir pastas\n\nClique em **⊞ Pasta** para vincular uma pasta do seu computador.[^2] Todos os arquivos `.md` da pasta e subpastas aparecem na coluna esquerda como uma árvore navegável. Você pode abrir **múltiplas pastas** simultaneamente — cada uma aparece como uma seção separada na barra lateral.\n\n---\n\n## Links entre notas\n\nUse `[[título]]` para criar um link para outra nota:\n\n- [[Zettelkasten]] — exemplo de link para a nota de referência\n- [[Filosofia do Estudo]] — outra nota incluída\n- Links em azul → nota existe; links tracejados → nota ainda não existe\n\n---\n\n## Exportar uma nota\n\nClique em **↗** para exportar a nota atual em:\n\n| Formato | Descrição |\n|---|---|\n| Markdown | `.md` padrão |\n| HTML (Latin Modern) | página com tipografia LaTeX |\n| PDF | via diálogo de impressão |\n| ODT | para LibreOffice/Word |\n| RTF | formato universal de texto |\n| Texto simples | `.txt` sem formatação |\n\n---\n\n## Exportar site HTML completo — ZIP\n\nEsta é a funcionalidade mais poderosa do Askesis-Zettel. Clique em **↗ → Site HTML (ZIP)** para exportar **todas as notas como um website interligado**.\n\nO arquivo `.zip` gerado contém:\n\n- `index.html` — página inicial com lista de notas e busca\n- `style.css` — tipografia Latin Modern embutida (funciona offline)\n- `{nota}.html` — uma página por nota, com links funcionando\n- `tag-{palavra}.html` — uma página por palavra-chave\n\n### Links automáticos\n\nNo site exportado, dois tipos de link são gerados automaticamente:\n\n1. **`[[wikilinks]]` explícitos** — viram `<a href=\"nota.html\">` clicáveis (link azul sólido)\n2. **Títulos de notas no texto** — qualquer ocorrência de um título de nota no corpo do texto é automaticamente convertida em link (link azul pontilhado)\n\nPor exemplo, se você tem uma nota chamada \"Estoicismo\" e escreve em outra nota: *\"O Estoicismo ensina que...\"*, a palavra \"Estoicismo\" vira link automaticamente — sem precisar escrever `[[Estoicismo]]`.\n\n### Palavras-chave como páginas\n\nCada **tag** vira uma página no site (`tag-filosofia.html`) que lista todas as notas com aquela palavra-chave. No índice, as tags aparecem como nuvem clicável ordenada por frequência.\n\n### Personalizando o índice com `_index.md`\n\nCrie uma nota chamada `_index` na sua pasta para personalizar a página inicial do site. Ela usa frontmatter YAML e corpo em Markdown:\n\n```\n---\ntitle: Meu Zettelkasten\ndescription: Notas de pesquisa sobre filosofia\nauthor: Seu Nome\n---\n\nTexto de introdução que aparece antes da lista de notas.\nPode conter [[links]] para outras notas.\n```\n\nA nota `_index` **não é exportada como página separada** — apenas configura o `index.html`. Os campos YAML disponíveis são: `title`, `description`, `author`.\n\n---\n\n## Sintaxe Markdown suportada\n\n| Sintaxe | Resultado |\n|---|---|\n| `**texto**` | **negrito** |\n| `*texto*` | *itálico* |\n| `# Título` | Cabeçalho H1–H6 |\n| `[[nota]]` | Link Zettelkasten |\n| `[^1]` | Nota de rodapé[^3] |\n| ` ``` ` | Bloco de código |\n| `> texto` | Citação |\n| `- item` | Lista |\n| `| col |` | Tabela |\n\n---\n\n## Temas\n\nClique em **◑** para escolher entre 6 temas visuais: Askesis Light, Askesis Dark, Alto Contraste (claro/escuro), Nord e Solarized.\n\n---\n\n[^1]: Askesis é um projeto de pesquisa e desenvolvimento de ferramentas digitais para humanidades. Visite [askesis.hypotheses.org](https://askesis.hypotheses.org) para mais informações.\n[^2]: Requer navegador Chromium-based (Chrome, Edge, Brave). No Firefox, use o botão Abrir para carregar arquivos individualmente.\n[^3]: As notas de rodapé aparecem ao final do documento no preview e nas exportações HTML/PDF.\n"},
   {id:"202605151001",title:"Zettelkasten",filename:"Zettelkasten.md",tags:["método","conhecimento"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Zettelkasten\ntags: [método, conhecimento]\n---\n\n# Zettelkasten\n\nO **Zettelkasten** é um método de gestão do conhecimento desenvolvido pelo sociólogo Niklas Luhmann, que produziu mais de 70 livros e 400 artigos académicos usando um sistema de fichas interligadas.[^1]\n\n## Princípios\n\n1. **Atomicidade** — uma ideia por nota\n2. **Autonomia** — cada nota compreensível por si mesma\n3. **Conexão** — notas ligadas entre si via referências\n4. **Indexação** — pontos de entrada organizados\n\n## No Askesis-Zettel\n\nUse `[[título]]` para criar links entre notas. Veja [[Bem-vindo ao Askesis-Zettel]] para instruções completas.\n\n## Referências\n\n- Luhmann, N. *Kommunikation mit Zettelkästen* (1981)\n- Ahrens, S. *How to Take Smart Notes* (2017)\n\n[^1]: Luhmann manteve seu Zettelkasten físico com mais de 90.000 fichas ao longo de 40 anos de trabalho.\n"},
   {id:"202605151002",title:"Filosofia do Estudo",filename:"Filosofia do Estudo.md",tags:["filosofia","estudo"],created:"2026-05-15",updated:"2026-05-15",content:"---\ntitle: Filosofia do Estudo\ntags: [filosofia, estudo]\n---\n\n# Filosofia do Estudo\n\n> *\"Não basta acumular informação — é preciso cultivar compreensão.\"*\n\n## Estudo como Askesis\n\n*Askesis* (ἄσκησις) — prática disciplinada, exercício espiritual.\n\n- requer **quietude**\n- exige **presença**\n- produz **transformação**\n\n## Conexão com [[Zettelkasten]]\n\nAo externalizar conexões, liberamos memória de trabalho para pensar com mais profundidade.\n\n---\n\n*\"A mente não é um recipiente a ser preenchido, mas um fogo a ser aceso.\"* — Plutarco\n"},
 ];
@@ -1428,10 +1428,55 @@ function noteSlug(title){
   return _RESERVED_SLUGS.has(base) ? base + "-nota" : base;
 }
 
+// ── B: Auto-link note titles in rendered HTML ─────────────────
+// Scans text nodes in the rendered HTML and links any occurrence
+// of a note title to its page. Longer titles are matched first
+// to avoid partial matches ("Filosofia" before "Filo").
+// Skips content already inside <a>, <code>, <pre>, <h1>-<h6>.
+function autoLinkTitles(html, noteMap){
+  if(!noteMap.size) return html;
+
+  // Sort titles longest-first to prevent partial matches
+  const titles = [...noteMap.entries()]
+    .sort((a,b) => b[0].length - a[0].length);
+
+  // We work on text segments outside of HTML tags.
+  // Split into [tag, text, tag, text ...] and only process text parts.
+  const parts = html.split(/(<[^>]+>)/);
+  let inProtected = 0; // depth counter for a/code/pre/hN tags
+
+  return parts.map(part => {
+    if(part.startsWith("<")){
+      const tag = part.match(/^<\/?([a-z0-9]+)/i)?.[1]?.toLowerCase();
+      const isClose = part.startsWith("</");
+      const protected_tags = new Set(["a","code","pre","h1","h2","h3","h4","h5","h6"]);
+      if(protected_tags.has(tag)){
+        inProtected += isClose ? -1 : 1;
+      }
+      return part;
+    }
+    // Text node — apply auto-linking if not inside protected element
+    if(inProtected > 0) return part;
+    let text = part;
+    for(const [titleLower, slug] of titles){
+      // Build a case-insensitive word-boundary regex for this title
+      // Escape special regex chars in the title
+      const esc = titleLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Use word boundaries; for titles ending/starting with non-word chars,
+      // use lookahead/lookbehind for space or start/end of string
+      const re = new RegExp(`(?<![\\w\\-])${esc}(?![\\w\\-])`, 'gi');
+      text = text.replace(re, match =>
+        `<a href="${slug}.html" class="auto-link">${match}</a>`
+      );
+    }
+    return text;
+  }).join("");
+}
+
 function mdForSite(content, noteMap){
   const html = md(content);
-  // Post-process wikilink spans generated by md()/inline() into real <a> links
-  return html.replace(
+  // Step 1: resolve explicit [[wikilinks]]
+  const linked = html.replace(
     /<span class="wikilink (?:wikilink-exists|wikilink-missing)"[^>]*data-title="([^"]*)"[^>]*>([^<]*)<\/span>/g,
     (_, title, label) => {
       const slug = noteMap.get(title.toLowerCase());
@@ -1439,6 +1484,45 @@ function mdForSite(content, noteMap){
       return `<span class="wikilink-missing">${label}</span>`;
     }
   );
+  // Step 2: auto-link remaining note titles in text (B)
+  return autoLinkTitles(linked, noteMap);
+}
+
+// ── A: Tag page builder ────────────────────────────────────────
+function tagSlug(tag){
+  return "tag-" + (slugify(tag)||"tag").toLowerCase();
+}
+
+function buildSiteTagPage(tag, tagNotes, siteTitle){
+  const now = new Date().toLocaleDateString("pt-BR");
+  const items = tagNotes.map(n =>
+    `<li><a href="${noteSlug(n.title)}.html">${n.title}</a>
+     <span class="note-meta">${n.updated||""}</span></li>`
+  ).join("");
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${siteTitle} — #${tag}</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<nav class="site-nav">
+  <span class="nav-title">${siteTitle}</span>
+  <span class="nav-sep">›</span>
+  <span class="tag-pill">#${tag}</span>
+  <a href="index.html">← Índice</a>
+</nav>
+<h1><span class="tag-pill-lg">#${tag}</span></h1>
+<p>${tagNotes.length} nota${tagNotes.length!==1?"s":""} com esta palavra-chave.</p>
+<ul class="note-list">${items}</ul>
+<footer>
+  <a href="https://askesis.hypotheses.org">askesis.hypotheses.org</a>
+  · Exportado em ${now}
+</footer>
+</body>
+</html>`;
 }
 
 // Fetch a font URL and return a base64 data URI, or the original URL on failure
@@ -1528,6 +1612,22 @@ footer{margin-top:4em;padding-top:1.2em;border-top:1px solid #eee;font-size:.8em
 footer a{color:#b8965a}
 .site-intro{margin-bottom:1.8em;padding-bottom:1.2em;border-bottom:1px solid #e8e4db}
 .site-intro p{text-align:justify;hyphens:auto}
+/* ── Tag cloud (index page) ── */
+.tags-cloud-section{margin:1.6em 0 1.4em;padding:1em 1.2em;background:#f5f0e8;border-radius:4px}
+.tags-cloud-title{font-size:.9em;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin:0 0 .8em;font-weight:normal}
+.tags-cloud{display:flex;flex-wrap:wrap;gap:.5em}
+.tag-cloud-pill{display:inline-flex;align-items:center;gap:.3em;padding:4px 10px;border-radius:20px;background:#ede9df;color:#7a6640;text-decoration:none;font-size:.85em;font-style:italic;transition:background .15s,color .15s}
+.tag-cloud-pill:hover{background:#b8965a;color:#fff}
+.tag-count{font-size:.78em;opacity:.7;font-style:normal}
+/* ── Tag pills (note pages and index list) ── */
+a.note-tag{display:inline-block;font-size:.78em;padding:2px 8px;border-radius:2px;background:#ede9df;color:#7a6640;text-decoration:none;font-style:italic}
+a.note-tag:hover{background:#b8965a;color:#fff}
+/* ── Tag page ── */
+.tag-pill{font-size:.9em;font-style:italic;color:#b8965a;background:#f5f0e8;padding:2px 8px;border-radius:20px}
+.tag-pill-lg{font-size:.7em;vertical-align:middle;font-style:italic;color:#b8965a;background:#f5f0e8;padding:3px 12px;border-radius:20px;letter-spacing:.02em}
+/* ── Auto-links (B) ── */
+.auto-link{color:#4a7fa5;text-decoration:underline dotted;text-underline-offset:3px}
+.auto-link:hover{color:#d86d4e;text-decoration:underline}
 @media print{body{margin:0;padding:1cm;max-width:100%;background:#fff}nav.site-nav,.backlinks{display:none}a{color:#000;text-decoration:none}pre{white-space:pre-wrap}}
 @page{size:A4;margin:2.5cm 2cm 2.5cm 2.5cm}
 `.trim();
@@ -1535,7 +1635,10 @@ footer a{color:#b8965a}
 
 function buildSiteNotePage(note, noteMap, backlinks, folderName){
   const bodyHtml = mdForSite(note.content, noteMap);
-  const tags = (note.tags||[]).map(t=>`<span class="note-tag">${t}</span>`).join("");
+  // A: tags → links to tag pages
+  const tags = (note.tags||[]).map(t=>
+    `<a href="${tagSlug(t)}.html" class="note-tag">${t}</a>`
+  ).join("");
   const blHtml = backlinks.length
     ? `<div class="backlinks"><h4>Citado em</h4><ul>${
         backlinks.map(b=>`<li><a href="${noteSlug(b.title)}.html">${b.title}</a></li>`).join("")
@@ -1567,9 +1670,8 @@ ${blHtml}
 </html>`;
 }
 
-function buildSiteIndex(siteNotes, folderGroups, indexMeta){
+function buildSiteIndex(siteNotes, folderGroups, indexMeta, tagMap){
   const now = new Date().toLocaleDateString("pt-BR");
-  // Metadata from _index.md or defaults
   const siteTitle   = indexMeta?.title       || "Askesis-Zettel — Índice";
   const siteDesc    = indexMeta?.description || "";
   const siteAuthor  = indexMeta?.author      || "";
@@ -1582,23 +1684,32 @@ function buildSiteIndex(siteNotes, folderGroups, indexMeta){
   const sections = folderGroups.map(([folder, fnotes])=>{
     const items = fnotes.map(n=>{
       const tg = (n.tags||[]).length
-        ? `<span class="note-tags-inline">${n.tags.join(", ")}</span>` : "";
+        ? `<span class="note-tags-inline">${n.tags.map(t=>`<a href="${tagSlug(t)}.html">${t}</a>`).join(", ")}</span>` : "";
       return `<li><a href="${noteSlug(n.title)}.html">${n.title}</a> ${tg}<span class="note-meta">${n.updated||""}</span></li>`;
     }).join("");
     return `<div class="folder-section"><h2>${folder||"Notas"}</h2><ul class="note-list">${items}</ul></div>`;
   }).join("");
 
-  // Nav subtitle: author if set, otherwise note count
+  // A: tags cloud sorted by frequency
+  let tagsSection = "";
+  if(tagMap && tagMap.size){
+    const sorted = [...tagMap.entries()].sort((a,b)=>b[1].length-a[1].length);
+    const pills = sorted.map(([tag,tnotes])=>
+      `<a href="${tagSlug(tag)}.html" class="tag-cloud-pill"
+         title="${tnotes.length} nota${tnotes.length!==1?"s":""}">${tag} <span class="tag-count">${tnotes.length}</span></a>`
+    ).join("");
+    tagsSection = `<div class="tags-cloud-section">
+      <h2 class="tags-cloud-title">Palavras-chave</h2>
+      <div class="tags-cloud">${pills}</div></div>`;
+  }
+
   const navSub = siteAuthor
     ? `<span>${siteAuthor}</span><span class="nav-sep">·</span><span>${siteNotes.length} notas · ${now}</span>`
     : `<span>${siteNotes.length} notas · ${now}</span>`;
-
-  // Intro block: use _index.md body if provided, else default credit line
   const introBlock = introHtml
     ? `<div class="site-intro">${introHtml}</div>`
     : `<p>Gerado a partir de um Zettelkasten pelo
         <a href="https://askesis.hypotheses.org">projeto Askesis</a>.</p>`;
-
   const descMeta = siteDesc
     ? `<meta name="description" content="${siteDesc.replace(/"/g,"&quot;")}"/>\n` : "";
   const authorMeta = siteAuthor
@@ -1619,6 +1730,7 @@ ${descMeta}${authorMeta}<title>${siteTitle}</title>
 </nav>
 <h1>${siteTitle}</h1>
 ${introBlock}
+${tagsSection}
 <input class="index-search" type="search" placeholder="Buscar notas…"
   id="idx-search" oninput="filterNotes(this.value)" autocomplete="off"/>
 <div id="idx-body">${sections}</div>
@@ -1634,12 +1746,13 @@ function filterNotes(q){
   if(!q){b.innerHTML=${JSON.stringify(sections)};return;}
   const m=_n.filter(n=>n.title.toLowerCase().includes(q)||n.tags.some(t=>t.toLowerCase().includes(q)));
   if(!m.length){b.innerHTML='<p style="color:#aaa;font-style:italic">Nenhuma nota encontrada.</p>';return;}
-  b.innerHTML='<ul class="note-list">'+m.map(n=>'<li><a href="'+n.slug+'.html">'+n.title+'</a>'+(n.tags.length?'<span class="note-tags-inline">'+n.tags.join(', ')+'</span>':'')+' <span class="note-meta">'+n.updated+'</span></li>').join('')+'</ul>';
+  b.innerHTML='<ul class="note-list">'+m.map(n=>'<li><a href="'+n.slug+'.html">'+n.title+'</a>'+(n.tags.length?'<span class="note-tags-inline">'+n.tags.map(t=>'<a href="tag-'+t.toLowerCase().replace(/[^\w\-]/g,'')+'.html">'+t+'</a>').join(', ')+'</span>':'')+' <span class="note-meta">'+n.updated+'</span></li>').join('')+'</ul>';
 }
 <\/script>
 </body>
 </html>`;
 }
+
 
 async function exportSiteZip(){
   const allNotes = notes.filter(n=>n.content&&n.content.trim());
@@ -1711,14 +1824,31 @@ async function exportSiteZip(){
   const folderGroups=[...groupMap.entries()].sort((a,b)=>(!a[0])?-1:(!b[0])?1:a[0].localeCompare(b[0]));
 
   // ── Build ZIP ─────────────────────────────────────────────────────
+  // A: Build tag → [notes] map
+  const tagMap = new Map();
+  siteNotes.forEach(n=>{
+    (n.tags||[]).forEach(t=>{
+      if(!tagMap.has(t)) tagMap.set(t,[]);
+      tagMap.get(t).push(n);
+    });
+  });
+  const siteTitle = indexMeta?.title || "Askesis-Zettel — Índice";
+
   const zip = new JSZip();
   zip.file("style.css", await buildSiteCss());
-  zip.file("index.html", buildSiteIndex(siteNotes, folderGroups, indexMeta));
+  zip.file("index.html", buildSiteIndex(siteNotes, folderGroups, indexMeta, tagMap));
+
+  // One page per note
   siteNotes.forEach(n=>{
     zip.file(
       noteSlug(n.title)+".html",
       buildSiteNotePage(n, noteMap, blMap.get(n.id)||[], folderNames.get(n.id)||"")
     );
+  });
+
+  // A: One page per tag
+  tagMap.forEach((tnotes, tag)=>{
+    zip.file(tagSlug(tag)+".html", buildSiteTagPage(tag, tnotes, siteTitle));
   });
 
   const blob = await zip.generateAsync({
@@ -1729,8 +1859,9 @@ async function exportSiteZip(){
   a.download=`askesis-site-${new Date().toISOString().slice(0,10)}.zip`;
   a.click();
   URL.revokeObjectURL(a.href);
-  const n=indexNote?" (+ _index como template)":"";
-  setSaved(true,`✓ Site exportado — ${siteNotes.length} páginas${n}`);
+  const ni=indexNote?" (+ _index como template)":"";
+  const nt=tagMap.size?` · ${tagMap.size} palavras-chave`:"";
+  setSaved(true,`✓ Site exportado — ${siteNotes.length} páginas${nt}${ni}`);
 }
 
 // ══════════════════════════════════════════

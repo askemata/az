@@ -106,8 +106,8 @@ html,body{height:100%;overflow:hidden;font-family:'Spectral',Georgia,serif;font-
   gap:10px;padding:9px 16px;
   background:var(--accent);color:var(--bg-primary);
   font-size:11px;cursor:pointer;border:none;width:100%;
-  letter-spacing:.08em;font-weight:500;font-family:'Spectral',serif;
-  flex-shrink:0;text-transform:uppercase;
+  letter-spacing:.05em;font-family:'Spectral',serif;
+  flex-shrink:0;text-align:center;
 }
 #install-bar:hover{opacity:.88}
 #install-bar.visible{display:flex}
@@ -2251,17 +2251,127 @@ document.querySelectorAll(".overlay").forEach(ov=>ov.onclick=e=>{if(e.target===o
 // ══════════════════════════════════════════
 //  PWA
 // ══════════════════════════════════════════
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPromptEvent=e;document.getElementById("install-bar").classList.add("visible");});
-window.addEventListener("appinstalled",()=>document.getElementById("install-bar").classList.remove("visible"));
-document.getElementById("install-bar").onclick=()=>{if(installPromptEvent){installPromptEvent.prompt();installPromptEvent=null;document.getElementById("install-bar").classList.remove("visible");}};
+//  PWA — Service Worker + Manifest
+// ══════════════════════════════════════════
 
-if("serviceWorker" in navigator){
-  const sw=`const C="askesis-zettel-v3";self.addEventListener("install",e=>self.skipWaiting());self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==C).map(n=>caches.delete(n))))));self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(caches.open(C).then(cache=>fetch(e.request).then(r=>{cache.put(e.request,r.clone());return r;}).catch(()=>caches.match(e.request))));});`;
-  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"}))).catch(()=>{});
+// ── Detect serving context ──────────────────────────────────
+// Chrome only grants full PWA (icon, standalone window, persistent SW)
+// when served over http:// or https://. Under file:// the SW scope is
+// restricted and the install prompt may not appear.
+const _isHttp = location.protocol === "http:" || location.protocol === "https:";
+const _isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
+// ── Manifest with proper icon ───────────────────────────────
+// SVG icon embedded as data URI — works for both file:// and http://
+const _iconSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>
+  <rect width='512' height='512' rx='72' fill='%23141414'/>
+  <rect width='512' height='4' y='0' fill='%23b8965a'/>
+  <text x='256' y='300' font-family='Georgia,serif' font-size='220'
+        font-style='italic' font-weight='300'
+        text-anchor='middle' fill='%23b8965a'>Az</text>
+  <text x='256' y='380' font-family='monospace' font-size='42'
+        letter-spacing='8' text-anchor='middle' fill='%233e3c38'>ZETTEL</text>
+</svg>`;
+const _iconUri = "data:image/svg+xml," + encodeURIComponent(_iconSvg);
+
+const _manifest = {
+  name: "Askesis-Zettel",
+  short_name: "Askesis",
+  description: "Editor Markdown Zettelkasten — askesis.hypotheses.org",
+  theme_color: "#b8965a",
+  background_color: "#141414",
+  display: "standalone",
+  orientation: "any",
+  start_url: _isHttp ? location.href : ".",
+  scope: _isHttp ? location.pathname.replace(/[^/]+$/, "") : "/",
+  icons: [
+    { src: _iconUri, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
+    { src: _iconUri, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" },
+  ],
+  categories: ["productivity", "utilities"],
+  lang: "pt-BR",
+};
+const _ml = document.createElement("link");
+_ml.rel = "manifest";
+_ml.href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(_manifest));
+document.head.appendChild(_ml);
+
+// Also set theme-color meta for Android Chrome address bar
+const _tm = document.createElement("meta");
+_tm.name = "theme-color"; _tm.content = "#b8965a";
+document.head.appendChild(_tm);
+
+// ── Service Worker ──────────────────────────────────────────
+// Under http://localhost the SW gets proper scope and persists between sessions.
+// Under file:// it still registers but Chrome treats it as ephemeral.
+if ("serviceWorker" in navigator) {
+  const _swCode = `
+const CACHE = "askesis-zettel-v4";
+const PRECACHE = [];          // nothing to pre-cache — single file app
+self.addEventListener("install", e => {
+  self.skipWaiting();
+});
+self.addEventListener("activate", e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+self.addEventListener("fetch", e => {
+  if (e.request.method !== "GET") return;
+  // Cache-first for same-origin; network-first for external (fonts, etc.)
+  const url = new URL(e.request.url);
+  const isSameOrigin = url.origin === self.location.origin;
+  if (isSameOrigin) {
+    e.respondWith(
+      caches.open(CACHE).then(cache =>
+        cache.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(r => {
+            cache.put(e.request, r.clone());
+            return r;
+          });
+        })
+      )
+    );
+  } else {
+    // External resources: network with cache fallback
+    e.respondWith(
+      fetch(e.request).then(r => {
+        caches.open(CACHE).then(c => c.put(e.request, r.clone()));
+        return r;
+      }).catch(() => caches.match(e.request))
+    );
+  }
+});
+`;
+  const _swBlob = new Blob([_swCode], { type: "application/javascript" });
+  const _swUrl  = URL.createObjectURL(_swBlob);
+  navigator.serviceWorker.register(_swUrl, { scope: _isHttp ? "./" : undefined })
+    .then(reg => {
+      // Force update check on each load so new versions are picked up
+      reg.update().catch(() => {});
+    })
+    .catch(() => {});
 }
 
-const mf={name:"Askesis-Zettel",short_name:"Askesis-Z",description:"Editor Markdown Zettelkasten",theme_color:"#0d0d0d",background_color:"#0d0d0d",display:"standalone",start_url:".",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%230d0d0d'/><text x='256' y='360' font-family='serif' font-size='300' text-anchor='middle' fill='%23c9a96e'>✦</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
-const ml=document.createElement("link");ml.rel="manifest";ml.href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(mf));document.head.appendChild(ml);
+// ── Install prompt ──────────────────────────────────────────
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  installPromptEvent = e;
+  document.getElementById("install-bar").classList.add("visible");
+});
+window.addEventListener("appinstalled", () => {
+  document.getElementById("install-bar").classList.remove("visible");
+});
+document.getElementById("install-bar").onclick = () => {
+  if (installPromptEvent) {
+    installPromptEvent.prompt();
+    installPromptEvent = null;
+    document.getElementById("install-bar").classList.remove("visible");
+  }
+};
 
 // ══════════════════════════════════════════
 //  INIT

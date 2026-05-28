@@ -1419,8 +1419,13 @@ function doExport(note,fmt){
 //  - {slug}.html  : uma página por nota, links entre notas resolvidos
 // ══════════════════════════════════════════
 
+// Reserved filenames that cannot be used for note pages
+const _RESERVED_SLUGS = new Set(["index", "style"]);
+
 function noteSlug(title){
-  return (slugify(title)||"nota").toLowerCase();
+  const base = (slugify(title)||"nota").toLowerCase();
+  // Avoid collision with generated site files
+  return _RESERVED_SLUGS.has(base) ? base + "-nota" : base;
 }
 
 function mdForSite(content, noteMap){
@@ -1521,6 +1526,8 @@ sup a{color:#0070b7;text-decoration:none;font-size:.8em}
 .folder-section h2{font-size:1em;letter-spacing:.1em;text-transform:uppercase;color:#aaa;border-bottom:1px solid #eee;padding-bottom:.3em;margin:2em 0 .8em}
 footer{margin-top:4em;padding-top:1.2em;border-top:1px solid #eee;font-size:.8em;color:#aaa;text-align:center}
 footer a{color:#b8965a}
+.site-intro{margin-bottom:1.8em;padding-bottom:1.2em;border-bottom:1px solid #e8e4db}
+.site-intro p{text-align:justify;hyphens:auto}
 @media print{body{margin:0;padding:1cm;max-width:100%;background:#fff}nav.site-nav,.backlinks{display:none}a{color:#000;text-decoration:none}pre{white-space:pre-wrap}}
 @page{size:A4;margin:2.5cm 2cm 2.5cm 2.5cm}
 `.trim();
@@ -1560,8 +1567,14 @@ ${blHtml}
 </html>`;
 }
 
-function buildSiteIndex(siteNotes, folderGroups){
+function buildSiteIndex(siteNotes, folderGroups, indexMeta){
   const now = new Date().toLocaleDateString("pt-BR");
+  // Metadata from _index.md or defaults
+  const siteTitle   = indexMeta?.title       || "Askesis-Zettel — Índice";
+  const siteDesc    = indexMeta?.description || "";
+  const siteAuthor  = indexMeta?.author      || "";
+  const introHtml   = indexMeta?.introHtml   || "";
+
   const noteData = JSON.stringify(siteNotes.map(n=>({
     slug:noteSlug(n.title), title:n.title,
     tags:n.tags||[], updated:n.updated||"",
@@ -1572,24 +1585,40 @@ function buildSiteIndex(siteNotes, folderGroups){
         ? `<span class="note-tags-inline">${n.tags.join(", ")}</span>` : "";
       return `<li><a href="${noteSlug(n.title)}.html">${n.title}</a> ${tg}<span class="note-meta">${n.updated||""}</span></li>`;
     }).join("");
-    return `<div class="folder-section"><h2>${folder||"Notas internas"}</h2><ul class="note-list">${items}</ul></div>`;
+    return `<div class="folder-section"><h2>${folder||"Notas"}</h2><ul class="note-list">${items}</ul></div>`;
   }).join("");
+
+  // Nav subtitle: author if set, otherwise note count
+  const navSub = siteAuthor
+    ? `<span>${siteAuthor}</span><span class="nav-sep">·</span><span>${siteNotes.length} notas · ${now}</span>`
+    : `<span>${siteNotes.length} notas · ${now}</span>`;
+
+  // Intro block: use _index.md body if provided, else default credit line
+  const introBlock = introHtml
+    ? `<div class="site-intro">${introHtml}</div>`
+    : `<p>Gerado a partir de um Zettelkasten pelo
+        <a href="https://askesis.hypotheses.org">projeto Askesis</a>.</p>`;
+
+  const descMeta = siteDesc
+    ? `<meta name="description" content="${siteDesc.replace(/"/g,"&quot;")}"/>\n` : "";
+  const authorMeta = siteAuthor
+    ? `<meta name="author" content="${siteAuthor.replace(/"/g,"&quot;")}"/>\n` : "";
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Askesis-Zettel — Índice</title>
+${descMeta}${authorMeta}<title>${siteTitle}</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <nav class="site-nav">
-  <span class="nav-title">Askesis-Zettel</span>
-  <span>${siteNotes.length} notas · ${now}</span>
+  <span class="nav-title">${siteTitle}</span>
+  ${navSub}
 </nav>
-<h1>Índice de Notas</h1>
-<p>Gerado a partir de um Zettelkasten pelo
-  <a href="https://askesis.hypotheses.org">projeto Askesis</a>.</p>
+<h1>${siteTitle}</h1>
+${introBlock}
 <input class="index-search" type="search" placeholder="Buscar notas…"
   id="idx-search" oninput="filterNotes(this.value)" autocomplete="off"/>
 <div id="idx-body">${sections}</div>
@@ -1613,8 +1642,8 @@ function filterNotes(q){
 }
 
 async function exportSiteZip(){
-  const siteNotes = notes.filter(n=>n.content&&n.content.trim());
-  if(!siteNotes.length){ alert("Nenhuma nota para exportar."); return; }
+  const allNotes = notes.filter(n=>n.content&&n.content.trim());
+  if(!allNotes.length){ alert("Nenhuma nota para exportar."); return; }
 
   setSaved(false,"⏳ Gerando site…");
 
@@ -1623,10 +1652,37 @@ async function exportSiteZip(){
     setSaved(true); return;
   }
 
-  // slug → note map for wikilink resolution
+  // ── Detect _index note ────────────────────────────────────────────
+  // A note titled "_index" (or filename "_index.md") is treated as a
+  // site template: its frontmatter configures the index page and its
+  // body is rendered as the introduction text. It is NOT exported as
+  // a standalone page.
+  const indexNote = allNotes.find(n=>
+    n.title.toLowerCase()==="_index" ||
+    n.filename?.toLowerCase()==="_index.md"
+  );
+
+  // Parse metadata from _index frontmatter + render body as intro
+  let indexMeta = null;
+  if(indexNote){
+    const fm = parseFrontmatter(indexNote.content);
+    // Strip frontmatter from body, render remaining Markdown as intro
+    let body = indexNote.content.replace(/^---[\s\S]*?---\n?/,"").trim();
+    indexMeta = {
+      title:      fm?.title       || fm?.nome   || "",
+      description:fm?.description || fm?.desc   || "",
+      author:     fm?.author      || fm?.autor  || "",
+      introHtml:  body ? mdForSite(body, new Map()) : "",
+    };
+  }
+
+  // Exclude _index from the exported pages
+  const siteNotes = allNotes.filter(n=>n!==indexNote);
+
+  // ── slug → note map for wikilink resolution ───────────────────────
   const noteMap = new Map(siteNotes.map(n=>[n.title.toLowerCase(), noteSlug(n.title)]));
 
-  // backlinks index
+  // ── Backlinks index ───────────────────────────────────────────────
   const blMap = new Map();
   siteNotes.forEach(n=>{
     (n.content.match(/\[\[([^\]]+)\]\]/g)||[]).forEach(lk=>{
@@ -1636,7 +1692,7 @@ async function exportSiteZip(){
     });
   });
 
-  // folder names per note
+  // ── Folder names per note ─────────────────────────────────────────
   const folderNames = new Map();
   for(const folder of openFolders){
     Object.keys(folder.fileHandles).forEach(rp=>{
@@ -1645,7 +1701,7 @@ async function exportSiteZip(){
     });
   }
 
-  // folder groups for index
+  // ── Folder groups for index ───────────────────────────────────────
   const groupMap = new Map();
   siteNotes.forEach(n=>{
     const k=folderNames.get(n.id)||"";
@@ -1654,9 +1710,10 @@ async function exportSiteZip(){
   });
   const folderGroups=[...groupMap.entries()].sort((a,b)=>(!a[0])?-1:(!b[0])?1:a[0].localeCompare(b[0]));
 
+  // ── Build ZIP ─────────────────────────────────────────────────────
   const zip = new JSZip();
   zip.file("style.css", await buildSiteCss());
-  zip.file("index.html", buildSiteIndex(siteNotes, folderGroups));
+  zip.file("index.html", buildSiteIndex(siteNotes, folderGroups, indexMeta));
   siteNotes.forEach(n=>{
     zip.file(
       noteSlug(n.title)+".html",
@@ -1672,7 +1729,8 @@ async function exportSiteZip(){
   a.download=`askesis-site-${new Date().toISOString().slice(0,10)}.zip`;
   a.click();
   URL.revokeObjectURL(a.href);
-  setSaved(true,`✓ Site exportado — ${siteNotes.length} páginas`);
+  const n=indexNote?" (+ _index como template)":"";
+  setSaved(true,`✓ Site exportado — ${siteNotes.length} páginas${n}`);
 }
 
 // ══════════════════════════════════════════

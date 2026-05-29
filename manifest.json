@@ -1,0 +1,25 @@
+{
+  "background_color": "#ffffff",
+  "description": "Askesis-Zettel — Editor Markdown Zettelkasten local-first",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Askesis-Zettel",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Askesis-Zettel",
+  "start_url": "/",
+  "theme_color": "#0d0d0d",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'&gt;&lt;rect width='512' height='512' rx='80' fill='%230d0d0d'/&gt;&lt;text x='256' y='360' font-family='serif' font-size='300' text-anchor='middle' fill='%23c9a96e'&gt;✦&lt;/text&gt;&lt;/svg&gt;",
+      "isSquare": false,
+      "isPng": false,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 0,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ]
+}

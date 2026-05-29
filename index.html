@@ -2713,75 +2713,182 @@ document.querySelectorAll(".overlay").forEach(ov=>ov.onclick=e=>{if(e.target===o
 //  PWA
 // ══════════════════════════════════════════
 //  PWA — Service Worker + Manifest
+//  Pronto para PWA Builder (pwabuilder.com)
+//
+//  Para usar com PWA Builder:
+//  1. Hospede este arquivo em qualquer servidor HTTPS
+//     (GitHub Pages, Netlify, Vercel — todos gratuitos)
+//  2. Acesse pwabuilder.com e cole a URL
+//  3. PWA Builder analisa e gera pacotes para:
+//     Windows (MSIX), Android (APK/AAB), iOS
 // ══════════════════════════════════════════
 
-// ── Detect serving context ──────────────────────────────────
-// Chrome only grants full PWA (icon, standalone window, persistent SW)
-// when served over http:// or https://. Under file:// the SW scope is
-// restricted and the install prompt may not appear.
 const _isHttp = location.protocol === "http:" || location.protocol === "https:";
-const _isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
 
-// ── Manifest with proper icon ───────────────────────────────
-// SVG icon embedded as data URI — works for both file:// and http://
-const _iconSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>
-  <rect width='512' height='512' rx='72' fill='%23141414'/>
-  <rect width='512' height='4' y='0' fill='%23b8965a'/>
-  <text x='256' y='300' font-family='Georgia,serif' font-size='220'
-        font-style='italic' font-weight='300'
-        text-anchor='middle' fill='%23b8965a'>Az</text>
-  <text x='256' y='380' font-family='monospace' font-size='42'
-        letter-spacing='8' text-anchor='middle' fill='%233e3c38'>ZETTEL</text>
-</svg>`;
-const _iconUri = "data:image/svg+xml," + encodeURIComponent(_iconSvg);
+// ── Gerar ícones PNG via Canvas (exigido por todas as lojas) ──────────────
+// PWA Builder, Google Play, Windows Store e Apple Store rejeitam ícones SVG.
+// Geramos PNGs em múltiplos tamanhos diretamente no browser via Canvas API.
+function _makeIconPng(size, maskable){
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const ctx = c.getContext("2d");
+  const r = maskable ? 0 : size * 0.14; // maskable = sem arredondamento
+
+  // Background
+  ctx.fillStyle = "#141414";
+  if(r > 0){
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size);
+    ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.fillRect(0, 0, size, size);
+  }
+
+  // Amber top stripe
+  ctx.fillStyle = "#b8965a";
+  ctx.fillRect(0, 0, size, Math.max(2, size * 0.008));
+
+  // "Az" text
+  ctx.fillStyle = "#b8965a";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const fs = size * 0.42;
+  ctx.font = `300 italic ${fs}px Georgia, serif`;
+  ctx.fillText("Az", size * 0.5, size * 0.52);
+
+  // "ZETTEL" small label
+  ctx.fillStyle = "#3e3c38";
+  const lfs = size * 0.075;
+  ctx.font = `${lfs}px monospace`;
+  ctx.letterSpacing = (size * 0.015) + "px";
+  ctx.fillText("ZETTEL", size * 0.5, size * 0.82);
+
+  return c.toDataURL("image/png");
+}
+
+// Pre-generate all required sizes
+// Sizes required: 48,72,96,128,144,192,384,512 (plus maskable 192,512)
+const _iconSizes = [48, 72, 96, 128, 144, 192, 384, 512];
+const _icons = [];
+_iconSizes.forEach(s => {
+  _icons.push({ src: _makeIconPng(s, false), sizes: `${s}x${s}`, type: "image/png", purpose: "any" });
+});
+// Maskable variants (192 and 512) — full bleed, no rounded corners
+_icons.push({ src: _makeIconPng(192, true), sizes: "192x192", type: "image/png", purpose: "maskable" });
+_icons.push({ src: _makeIconPng(512, true), sizes: "512x512", type: "image/png", purpose: "maskable" });
+
+// ── Screenshots (PWA Builder usa para lojas) ──────────────────────────────
+// Geramos screenshots sintéticas representando o app
+function _makeScreenshot(w, h, label){
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#f8f4ed";
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = "#b8965a";
+  ctx.fillRect(0, 0, w, 3);
+  ctx.fillStyle = "#f0ece4";
+  ctx.fillRect(0, 0, w, h * 0.06);
+  ctx.fillStyle = "#b8965a";
+  ctx.font = `300 italic ${h * 0.025}px Georgia, serif`;
+  ctx.textBaseline = "middle";
+  ctx.fillText("Askesis-Zettel", w * 0.02, h * 0.03);
+  ctx.fillStyle = "#28261e";
+  ctx.font = `${h * 0.032}px Georgia, serif`;
+  ctx.textAlign = "center";
+  ctx.fillText(label, w * 0.5, h * 0.5);
+  ctx.fillStyle = "#aaa";
+  ctx.font = `${h * 0.02}px Georgia, serif`;
+  ctx.fillText("askesis.hypotheses.org", w * 0.5, h * 0.56);
+  return c.toDataURL("image/png");
+}
+const _screenshots = [
+  {
+    src: _makeScreenshot(1280, 800, "Editor Markdown Zettelkasten"),
+    sizes: "1280x800", type: "image/png",
+    form_factor: "wide",
+    label: "Editor Markdown com preview em tempo real"
+  },
+  {
+    src: _makeScreenshot(390, 844, "Askesis-Zettel Mobile"),
+    sizes: "390x844", type: "image/png",
+    form_factor: "narrow",
+    label: "Interface mobile com navegação por pastas"
+  },
+];
+
+// ── Manifest completo ─────────────────────────────────────────────────────
+const _startUrl = _isHttp ? location.href : ".";
+const _scope    = _isHttp ? location.pathname.replace(/[^/]+$/, "") : "/";
 
 const _manifest = {
+  id: "org.askesis.zettel",
   name: "Askesis-Zettel",
   short_name: "Askesis",
-  description: "Editor Markdown Zettelkasten — askesis.hypotheses.org",
+  description: "Editor Markdown Zettelkasten local-first com exportação para site HTML. Desenvolvido pelo projeto Askesis — askesis.hypotheses.org",
   theme_color: "#b8965a",
   background_color: "#141414",
   display: "standalone",
+  display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
   orientation: "any",
-  start_url: _isHttp ? location.href : ".",
-  scope: _isHttp ? location.pathname.replace(/[^/]+$/, "") : "/",
-  icons: [
-    { src: _iconUri, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
-    { src: _iconUri, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" },
-  ],
-  categories: ["productivity", "utilities"],
+  start_url: _startUrl,
+  scope: _scope,
   lang: "pt-BR",
+  dir: "ltr",
+  categories: ["productivity", "utilities", "education"],
+  prefer_related_applications: false,
+  icons: _icons,
+  screenshots: _screenshots,
+  shortcuts: [
+    {
+      name: "Nova Nota",
+      short_name: "Nova",
+      description: "Criar uma nova nota",
+      url: _startUrl + "#new",
+      icons: [{ src: _makeIconPng(96, false), sizes: "96x96", type: "image/png" }]
+    }
+  ],
 };
+
 const _ml = document.createElement("link");
 _ml.rel = "manifest";
 _ml.href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(_manifest));
 document.head.appendChild(_ml);
 
-// Also set theme-color meta for Android Chrome address bar
+// theme-color meta para Android Chrome
 const _tm = document.createElement("meta");
 _tm.name = "theme-color"; _tm.content = "#b8965a";
 document.head.appendChild(_tm);
 
-// ── Service Worker ──────────────────────────────────────────
-// Under http://localhost the SW gets proper scope and persists between sessions.
-// Under file:// it still registers but Chrome treats it as ephemeral.
+// apple-touch-icon para iOS (PWA Builder também usa)
+const _appleIcon = document.createElement("link");
+_appleIcon.rel = "apple-touch-icon";
+_appleIcon.href = _makeIconPng(180, false);
+document.head.appendChild(_appleIcon);
+
+// ── Service Worker ────────────────────────────────────────────────────────
 if ("serviceWorker" in navigator) {
   const _swCode = `
 const CACHE = "askesis-zettel-v4";
-const PRECACHE = [];          // nothing to pre-cache — single file app
-self.addEventListener("install", e => {
-  self.skipWaiting();
-});
+self.addEventListener("install", e => { self.skipWaiting(); });
 self.addEventListener("activate", e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  // Cache-first for same-origin; network-first for external (fonts, etc.)
   const url = new URL(e.request.url);
   const isSameOrigin = url.origin === self.location.origin;
   if (isSameOrigin) {
@@ -2789,35 +2896,26 @@ self.addEventListener("fetch", e => {
       caches.open(CACHE).then(cache =>
         cache.match(e.request).then(cached => {
           if (cached) return cached;
-          return fetch(e.request).then(r => {
-            cache.put(e.request, r.clone());
-            return r;
-          });
+          return fetch(e.request).then(r => { cache.put(e.request, r.clone()); return r; });
         })
       )
     );
   } else {
-    // External resources: network with cache fallback
     e.respondWith(
-      fetch(e.request).then(r => {
-        caches.open(CACHE).then(c => c.put(e.request, r.clone()));
-        return r;
-      }).catch(() => caches.match(e.request))
+      fetch(e.request)
+        .then(r => { caches.open(CACHE).then(c => c.put(e.request, r.clone())); return r; })
+        .catch(() => caches.match(e.request))
     );
   }
 });
 `;
   const _swBlob = new Blob([_swCode], { type: "application/javascript" });
-  const _swUrl  = URL.createObjectURL(_swBlob);
-  navigator.serviceWorker.register(_swUrl, { scope: _isHttp ? "./" : undefined })
-    .then(reg => {
-      // Force update check on each load so new versions are picked up
-      reg.update().catch(() => {});
-    })
-    .catch(() => {});
+  navigator.serviceWorker.register(URL.createObjectURL(_swBlob), {
+    scope: _isHttp ? "./" : undefined
+  }).then(reg => reg.update().catch(() => {})).catch(() => {});
 }
 
-// ── Install prompt ──────────────────────────────────────────
+// ── Install prompt ────────────────────────────────────────────────────────
 window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   installPromptEvent = e;
